@@ -1,0 +1,6 @@
+# Bundle patch layer for dsh-session-matrix.
+# Loads `lib/index.js` as the host half; the `dsh.client` declaration in
+# package.json makes the web app load `lib/client.js` as the browser half.
+- insert:
+    - id: dsh-session-matrix
+      name: dsh-session-matrix

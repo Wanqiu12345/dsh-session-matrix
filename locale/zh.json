@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "会话矩阵工作台",
+    "description": "多会话 Agent 工作台：1–4 格原生对话窗格、矩形分层会话链路图，按各自压缩点换算上下文预警，附带缓存命中与预估费用。",
+    "detail": "README.md"
+  },
+  "view": { "cockpit": "智能体脉络", "workspace": "工作区" },
+  "panel": { "title": "会话矩阵工作台" },
+  "action": { "open": "打开工作台", "refresh": "刷新", "enter": "进入会话" },
+  "risk": { "ok": "正常", "warn": "注意", "crit": "预警", "unknown": "数据未知" },
+  "empty": { "noSession": "没有可显示的会话", "pickNode": "点击任一节点查看上下文详情" }
+}

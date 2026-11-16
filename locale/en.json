@@ -1,0 +1,12 @@
+{
+  "meta": {
+    "title": "Session Matrix",
+    "description": "Multi-session Agent workbench: 1–4 native conversation panes, a rectangular layered session network, context warnings derived from each session's real compaction point, plus prompt-cache hit rate and estimated cost.",
+    "detail": "README.md"
+  },
+  "view": { "cockpit": "Agent Flow", "workspace": "Workspace" },
+  "panel": { "title": "Session Matrix" },
+  "action": { "open": "Open workbench", "refresh": "Refresh", "enter": "Enter session" },
+  "risk": { "ok": "Normal", "warn": "Watch", "crit": "Critical", "unknown": "No data" },
+  "empty": { "noSession": "No sessions to show", "pickNode": "Select any node to inspect its context" }
+}

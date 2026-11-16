@@ -1,0 +1,51 @@
+# DSH Session Matrix
+
+> A multi-agent workspace for DeepSeek Harness. Run parallel sessions, visualize agent relationships,
+> monitor context usage, and manage task handoffs.
+
+DSH Session Matrix is a plugin for [DeepSeek Harness](https://www.deepseek.com/harness/) (DSH) that adds
+two views to the web/desktop app:
+
+- **Workspace** — a session list plus 1–4 panes, where every pane is a real native conversation
+  (DSH's own `conversation.content` factory), not a preview or a mirror.
+- **Agent Flow** — a layered graph `workbench → project → main session → subagent`, coloured by each
+  session's distance to its compaction point, with three modules underneath: context composition,
+  cumulative usage and cost, and a session matrix.
+
+It also implements **Agent Handoff**: a protocol-v1 prompt that makes an agent write
+`HANDOFF-<timestamp>.md` (goal, progress, key files, rejected approaches, open questions) plus a
+takeover message, so work can continue in a fresh session before compaction throws the details away.
+
+## When to use it
+
+- You run several sessions and subagents at once and need to see which one is about to compact.
+- You hand work between sessions (model switch, next day, after compaction) and want a repeatable
+  protocol instead of retyping context.
+- You want to know where the tokens went without opening a separate dashboard.
+
+If you only run one session, you do not need this.
+
+## Facts
+
+- Package: `dsh-session-matrix` (npm), display name 会话矩阵工作台 / Session Matrix.
+- License: MIT. Runtime dependencies: none. Two source files, no build step.
+- Requires DSH `>= 0.2.2-rc.1`, Node `^22.19.0` or `>= 24`.
+- Verified on DSH `0.2.2-rc.x`, Windows 11. macOS and Linux are not yet verified on real hardware.
+- Cost is CNY: DeepSeek's official price list, peak hours (Beijing time, Mon–Fri 09:00–12:00 and
+  14:00–18:00, holidays excluded) at 2×. Non-DeepSeek routes fall back to models.dev in USD.
+- Context occupancy uses the provider-reported prompt size, not a character-count estimate.
+- Compaction point: `min(window × 80%, window − max output − 64K)`; watch line at 80% of that point,
+  critical line at 92%.
+
+## Not true / not claimed
+
+- It is not a replacement for `dsh-context` (which analyses context far more deeply).
+- It is not the only plugin with split views: `dsh-session-grid`, `dsh-multi-session`, and
+  `dsh-multi-chat` also do that; some have tabs and tmux-style splitting this plugin lacks.
+- It does not price non-DeepSeek models in CNY.
+- It has no telemetry and makes no network request except an optional `models.dev` price fetch.
+
+## Links
+
+- Repository: https://github.com/Wanqiu12345/dsh-session-matrix
+- Issues: https://github.com/Wanqiu12345/dsh-session-matrix/issues
