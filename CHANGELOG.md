@@ -2,6 +2,26 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.15.3] — 2026-11-17
+
+### 修复
+- **Client 与 Host 各算一套压缩点。** Host 已改为 `window − output − 4096`，Client 还留着
+  `COMPACT_RATIO = 0.8` / `COMPACT_HEADROOM = 65536`，于是图谱颜色、Tooltip 与 DTO 的
+  `compactRatio` 对不上。现在 Client 只消费 `compactTokens` / `compactRatio` / `compactRetain` /
+  `risk`，Host 新增 `compactRetain` 字段；旧公式与常量整段删除。
+- 悬浮提示里「窗口×0.8 与 64K 余量取小」的说明改为「窗口 − 输出预留 − 4K 余量」，与
+  `dsh-compaction-basic` 一致。
+- `usage-split`：负数与 `NaN` 不再参与求和。
+
+### 新增
+- `test/usage-split.test.mjs`：10 条用例覆盖峰时边界（09:00 / 12:00 / 14:00 / 18:00、周末）、
+  时间戳单位、多帧、截断帧、损坏帧、缺 usage、脏数据。`npm test` 现在跑两个文件。
+- 用例锁死「Client 不得再定义压缩常量」，防止两份公式再次分叉。
+
+### 变更
+- 日志解析增加增长门槛：活跃会话在 60 秒内、增长不足 256KB 时不重新全量解压。
+- 损坏帧不再中断整份日志，跳过该候选继续扫描后面的帧。
+
 ## [0.15.2] — 2026-11-17
 
 ### 文档

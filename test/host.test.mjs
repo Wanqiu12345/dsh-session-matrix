@@ -314,6 +314,9 @@ async function main() {
     assert.ok(sample, 'fixture should carry a 1M-window session')
     assert.equal(sample.compactTokens, 1_000_000 - 256_000 - 4096)
     assert.ok(Math.abs(sample.compactRatio - (1_000_000 - 256_000 - 4096) / 1_000_000) < 1e-9)
+    // Compacted history keeps 16% of (window − output) verbatim; the client
+    // renders this, so it has to travel in the DTO.
+    assert.equal(sample.compactRetain, Math.round((1_000_000 - 256_000) * 0.16))
   })
 
   // Regression: the `title` projection folds to `string | null`. Reading
@@ -390,6 +393,14 @@ async function main() {
 
     assert.equal(body.pricing.enabled, false, 'prices:false must reach the payload')
     assert.equal(body.pricing.ready, false)
+  })
+
+  // The client used to carry its own COMPACT_RATIO/HEADROOM copy; it drifted
+  // from the host the moment the host was fixed. One formula, one place.
+  check('client consumes the compaction point instead of recomputing it', () => {
+    const code = readFileSync(new URL('../lib/client.js', import.meta.url), 'utf8')
+    assert.ok(!/COMPACT_HEADROOM|COMPACT_RATIO/.test(code), 'client still defines compaction constants')
+    assert.ok(code.includes('session.compactTokens'), 'client should read the DTO field')
   })
 
   check('subagent project resolves through the parent chain', () => {

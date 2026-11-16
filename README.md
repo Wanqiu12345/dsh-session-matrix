@@ -89,7 +89,7 @@
 |:--|:--|:--|
 | **上下文构成** | 此刻模型看到了什么 | 当前 prompt 的九类占比，是快照 |
 | **累计用量与费用** | 这个会话一共烧了多少 | 四个 token 桶相加，是历史合计 |
-| **会话矩阵** | 每个会话现在什么状态 | 模型 / 占用 / 风险 / 轮次，点进会话 |
+| **会话概览** | 每个会话现在什么状态 | 模型 / 占用 / 风险 / 轮次，点进会话 |
 
 「当前占用」和「合计」不是同一个量：前者是此刻占着多少，后者是历史上一共读过多少。
 
@@ -104,7 +104,7 @@ messageBudget  = contextWindow − reservedCompletionTokens   # 一次请求预�
 pressureBudget = messageBudget − policy.headroomTokens      # headroom 默认 4096
 ```
 
-1M 窗口、256K 输出的模型，压缩点约 **75.2%**（788,480 tokens）。早先版本用的是
+1,048,576 窗口、256,000 输出预留的模型，压缩点 **788,480 tokens（75.2%）**。早先版本用的是
 `min(window × 80%, window − output − 64K)`，那是估算，会比 DSH 真实触发点提前预警——已改掉。
 
 | 阈值 | 计算 | 含义 |
@@ -277,7 +277,7 @@ header; node colour is distance to the compaction point; node size tracks cumula
 node re-scopes three modules: prompt composition, cumulative usage and cost, and a per-session matrix.
 
 **Context** — the compaction point mirrors `dsh-compaction-basic`: `window − reserved output − 4096`,
-which is 75.2% for a 1M window with 256K reserved. The watch line sits at 80% of that point, the critical
+which is 788,480 tokens (75.2%) for a 1,048,576 window with 256,000 reserved. The watch line sits at 80% of that point, the critical
 line at 92%. Occupancy uses the provider-reported prompt size, not a
 character estimate.
 
