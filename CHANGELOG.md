@@ -2,6 +2,11 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.14.3] — 2026-11-17
+
+### 新增
+- `/api/session-matrix/capabilities` 返回 `pluginVersion`，安装后可直接从 HTTP 确认装的是哪个版本，issue 里也能对上号。
+
 ## [0.14.2] — 2026-11-17
 
 ### 文档
