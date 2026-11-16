@@ -97,14 +97,15 @@
 
 ## 上下文监控
 
-压缩点由模型窗口和输出预留共同决定，不是固定百分比：
+压缩点照搬 `dsh-compaction-basic` 的算法，不是自己拍的百分比：
 
 ```
-compaction point = min(window × 80%, window − max output − 64K headroom)
+messageBudget  = contextWindow − reservedCompletionTokens   # 一次请求预留的输出
+pressureBudget = messageBudget − policy.headroomTokens      # headroom 默认 4096
 ```
 
-`window × 80%` 留出回复与后续输入的空间；减去输出预留，是因为压缩后仍然要生成内容。
-1M 窗口、256K 输出的模型，压缩点约 **69%**，不是 80%。
+1M 窗口、256K 输出的模型，压缩点约 **75.2%**（788,480 tokens）。早先版本用的是
+`min(window × 80%, window − output − 64K)`，那是估算，会比 DSH 真实触发点提前预警——已改掉。
 
 | 阈值 | 计算 | 含义 |
 |:--|:--|:--|
@@ -270,8 +271,9 @@ composer are native.
 header; node colour is distance to the compaction point; node size tracks cumulative usage. Selecting a
 node re-scopes three modules: prompt composition, cumulative usage and cost, and a per-session matrix.
 
-**Context** — compaction point is `min(window × 80%, window − max output − 64K)`; the watch line sits
-at 80% of that point, the critical line at 92%. Occupancy uses the provider-reported prompt size, not a
+**Context** — the compaction point mirrors `dsh-compaction-basic`: `window − reserved output − 4096`,
+which is 75.2% for a 1M window with 256K reserved. The watch line sits at 80% of that point, the critical
+line at 92%. Occupancy uses the provider-reported prompt size, not a
 character estimate.
 
 **Handoff** — protocol v1 writes `HANDOFF-<timestamp>.md` (goal, progress, key files, rejected

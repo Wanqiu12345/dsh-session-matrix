@@ -2,6 +2,18 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.15.1] — 2026-11-17
+
+### 修复
+- 压缩点改为照搬 `dsh-compaction-basic`：`window − 预留输出 − headroomTokens(4096)`。
+  原来的 `min(window × 80%, window − output − 64K)` 会提前预警，1M/256K 的会话从 69.3% 修正为 75.2%。
+- 费用提示改为按来源区分：从日志分桶的显示金额，只有总量时显示 `≈` 前缀并在 tooltip 说明是估算。
+
+### 变更
+- 文件头与关键词清理：移除 `Agent Workspace` 旧名与 `agent-workspace` 关键词；
+  `storages/agent-workspace/` 路径与 `aw.*` 键保持不变。
+- 新增用例：压缩点必须等于 `window − maxOutput − 4096`。
+
 ## [0.15.0] — 2026-11-17
 
 ### 新增

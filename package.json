@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-matrix",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A multi-agent workspace for DeepSeek Harness: run parallel sessions, visualize agent relationships, monitor context usage, and manage task handoffs.",
   "keywords": [
     "deepseek-harness",
@@ -10,13 +10,14 @@
     "multi-session",
     "session-management",
     "parallel-sessions",
-    "agent-workspace",
     "context-monitoring",
     "agent-graph",
     "agent-handoff",
-    "context-engineering",
+    "agent-network",
     "多智能体工作台",
-    "多会话管理"
+    "多会话管理",
+    "会话关系图谱",
+    "上下文监控"
   ],
   "homepage": "https://github.com/Wanqiu12345/dsh-session-matrix#readme",
   "repository": {

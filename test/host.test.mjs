@@ -84,7 +84,7 @@ function loadFixture() {
     ]
     const projections = new Map([
       ['session-a', {
-        contextTimeline: { model: 'deepseek-flash', contextWindow: 1_000_000, current: { system: 100, tools: 200, user: 50, inject: 0, skill: 0, assistant: 300, tool: 400, total: 1050 } },
+        contextTimeline: { model: 'deepseek-flash', contextWindow: 1_000_000, maxOutputTokens: 256_000, current: { system: 100, tools: 200, user: 50, inject: 0, skill: 0, assistant: 300, tool: 400, total: 1050 } },
         contextActivity: {
           days: {
             '2026-11-15': {
@@ -304,6 +304,16 @@ async function main() {
     const sample = body.sessions.find(s => s.total != null && s.contextWindow)
     const expected = sample.total / sample.contextWindow
     assert.ok(Math.abs(sample.ratio - expected) < 1e-9)
+  })
+
+  // Regression: an earlier version used `min(window × 0.8, window − output − 64K)`,
+  // which warned well before DSH actually compacts. The shipped policy is
+  // `window − reservedCompletionTokens − headroomTokens(4096)`.
+  check('compaction point mirrors dsh-compaction-basic', () => {
+    const sample = body.sessions.find(s => s.contextWindow === 1_000_000)
+    assert.ok(sample, 'fixture should carry a 1M-window session')
+    assert.equal(sample.compactTokens, 1_000_000 - 256_000 - 4096)
+    assert.ok(Math.abs(sample.compactRatio - (1_000_000 - 256_000 - 4096) / 1_000_000) < 1e-9)
   })
 
   // Regression: the `title` projection folds to `string | null`. Reading
