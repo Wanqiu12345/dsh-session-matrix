@@ -12,6 +12,7 @@
 ### 变更
 - 文件头与关键词清理：移除 `Agent Workspace` 旧名与 `agent-workspace` 关键词；
   `storages/agent-workspace/` 路径与 `aw.*` 键保持不变。
+- 模块名「会话矩阵」改为「会话概览」，避免与产品名重名。
 - 新增用例：压缩点必须等于 `window − maxOutput − 4096`。
 
 ## [0.15.0] — 2026-11-17
