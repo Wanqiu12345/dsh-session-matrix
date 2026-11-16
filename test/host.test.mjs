@@ -73,21 +73,41 @@ function loadFixture() {
 
     return { records, workspaces, projections }
   } catch {
+    // Self-contained fixture: CI has no DSH home to read, so this path has to
+    // cover every shape the assertions rely on — a stub, a parent, a subagent,
+    // and a session with provider-reported usage.
     const records = [
       { header: { id: 'session-a', createdAt: 1, cwd: '/work/Alpha', isSeeded: false }, live: true, persisted: true },
       { header: { id: 'session-b', createdAt: 2, cwd: '/work/Alpha', parentSession: 'session-a', isSeeded: false, origin: 'subagent' }, live: false, persisted: true },
+      { header: { id: 'session-stub', createdAt: 4, cwd: '/work/Alpha', isSeeded: false }, live: false, persisted: true },
     ]
     const projections = new Map([
       ['session-a', {
         contextTimeline: { model: 'deepseek-flash', contextWindow: 1_000_000, current: { system: 100, tools: 200, user: 50, inject: 0, skill: 0, assistant: 300, tool: 400, total: 1050 } },
-        contextActivity: { days: { '2026-11-15': { tokens: 900, requests: 3 } } },
+        contextActivity: {
+          days: {
+            '2026-11-15': {
+              tokens: 900,
+              requests: 3,
+              // Provider-reported buckets; usageOf() reads this shape when the
+              // host does not register the tokenUsage projection.
+              cost: { deepseek: { 'deepseek-flash': { offPeak: { uncached: 400, cacheRead: 1600, cacheWrite: 0, output: 250 } } } },
+            },
+          },
+        },
         title: 'Alpha task',
         sessionListMetadata: { blank: false, lastPromptAt: 3 },
+      }],
+      ['session-stub', {
+        contextTimeline: null,
+        contextActivity: null,
+        title: 'New session',
+        sessionListMetadata: { blank: true, lastPromptAt: 4 },
       }],
     ])
     return {
       records,
-      workspaces: [{ id: 'w1', title: 'Alpha', path: '/work/Alpha', sessionIds: ['session-a', 'session-b'] }],
+      workspaces: [{ id: 'w1', title: 'Alpha', path: '/work/Alpha', sessionIds: ['session-a', 'session-b', 'session-stub'] }],
       projections,
     }
   }
