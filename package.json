@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-matrix",
-  "version": "0.14.3",
+  "version": "0.14.4",
   "description": "A multi-agent workspace for DeepSeek Harness: run parallel sessions, visualize agent relationships, monitor context usage, and manage task handoffs.",
   "keywords": [
     "deepseek-harness",

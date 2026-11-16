@@ -164,6 +164,9 @@ Agent Network，我们用同样的父子关系模型，但放在跨项目的全�
 
 两者可同时安装，互不冲突。
 
+**一个实际依赖**：费用数字与「合计」用量来自 dsh-context 注册的 `contextTimeline` / `contextActivity` 投影。
+没装它时，费用一栏是空的，模型名、上下文占用、脉络图、交接都照常工作——模型名走的是核心的 `modelSelection` 投影。
+
 ---
 
 <a id="install"></a>
