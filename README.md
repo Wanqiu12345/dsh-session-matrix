@@ -1,202 +1,239 @@
-# 会话矩阵工作台 · DSH Session Matrix
+# DSH Session Matrix · 会话矩阵工作台
 
-给 DeepSeek Harness 加一个左侧入口。点进去是一个独立面板：左边挑会话，右边最多并排开四格，
-每格都是能直接打字的原生会话；另一个标签把项目、会话、子代理画成一条从左到右的链路，按上下文压力着色。
-上下文快满之前，右上角那个按钮能把这摊活交给下一个会话。
+**给 DeepSeek Harness 的多智能体工作台。** 左侧一个独立入口，进去是两个视图：工作区最多并排四个原生会话窗格；
+智能体脉络把「项目 → 主会话 → 子代理」画成一张按压缩风险着色的 Agent Graph。上下文快满之前，
+一份交接协议把工作交给下一个会话。
 
-<sub>A multi-agent workspace for DeepSeek Harness — parallel native sessions, an agent relationship
-graph, context monitoring, and a handoff protocol. 中英双语，本页以中文为主，英文摘要见文末。</sub>
+[![npm](https://img.shields.io/npm/v/dsh-session-matrix?label=npm)](https://www.npmjs.com/package/dsh-session-matrix)
+[![license](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
+[![DSH](https://img.shields.io/badge/DSH-%E2%89%A50.2.2--rc.1-blue)](https://www.deepseek.com/harness/)
 
-![左侧入口：面板列表里的「会话矩阵工作台」，右侧是四格工作区](./docs/01-entry.png)
+```bash
+dsh plugin --profile web add dsh-session-matrix
+```
 
-## 装完你在界面上会多出三样东西
+![左侧入口与四格工作区](./docs/01-entry.png)
 
-1. 左侧面板列表里多一行 **会话矩阵工作台**（在「技能中心」「免费搜索」那一列）。
-2. 点开是一个独立面板，顶部两个标签：**工作区**、**智能体脉络**。
-3. 面板右上角一个 **通用交接提示词** 按钮，旁边有小圆点，提示有几个会话进了注意区。
+## 入口与视图
 
-没有别的了。它不往你的对话里插东西，也不改 DSH 的任何核心代码，只用公开的 Cordis 服务和 slot 扩展点。
+装完只多三样东西，没有别的东西插进你的对话流：
 
-## 工作区：左边挑，右边最多四格
-
-左边是会话列表，按项目分组，子代理折叠在它所属的主会话下面，点小三角展开。
-**归档的会话不显示**，和原生侧栏一致；你去原生界面取消归档，这边下一次刷新就回来了。
-
-右边是窗格，最多四格：
-
-| 格数 | 排法 |
+| 位置 | 你得到什么 |
 |---|---|
-| 1 | 占满 |
-| 2 | 左右 |
-| 3 | 上面两格，下面一格通栏 |
+| 左侧面板列表 | 一行「会话矩阵工作台」，与「上下文洞察」「技能中心」同级 |
+| 面板顶部 | 两个标签：**工作区**、**智能体脉络** |
+| 面板右上角 | **通用交接提示词** 按钮，带提醒点，显示有几个会话进入注意区 |
+
+不改 DSH 核心代码，只用公开的 Cordis 服务与 slot 扩展点。
+
+## 工作区：1–4 格原生会话
+
+左侧会话列表按项目分组，子代理折叠在所属主会话下；**归档会话不显示**，与原生侧栏一致，
+在原生侧取消归档后下一次刷新即恢复。
+
+右侧窗格按格数排版：
+
+| 格数 | 布局 |
+|---|---|
+| 1 | 单格铺满 |
+| 2 | 左右两列 |
+| 3 | 上二下一（下格通栏） |
 | 4 | 2×2 |
 
-- 每条分隔线都能拖，比例记在本机。
-- 每格标题栏中间有个缩放滑块（55%–100%），放在正中间是故意的——不想被误认成"控制上下文的那个条"。
-- 每格里是**原生对话**：消息、工具调用行、审批、Chat/Trajectory 切换、输入框，全是 DSH 自己的，
-  能直接发消息。不是截图，不是镜像。
+- 分隔线可拖动，比例写入 `localStorage`（`aw.splitCol` / `aw.splitRow`）。
+- 每格标题栏居中一个缩放滑块，55%–100%，按会话记忆。
+- 每格挂载的是 DSH 原生 `conversation.content` 工厂实例：消息流、工具调用行、审批、
+  Chat/Trajectory 切换、composer 都是原生的，可直接输入。
 
-![工作区：四格并排](./docs/02-workspace-4.png)
+![四格并排](./docs/02-workspace-4.png)
 
-## 智能体脉络：一条从左到右的链路
+## 智能体脉络：Agent Graph
 
-四列，从左到右：**工作台 → 项目 → 会话 → 子代理**。
+四列有向拓扑，从左到右：**工作台 → 项目 → 主会话 → 子代理**。像神经链路一样，每个 Agent 只跟自己的
+父级连线。
 
-- 连线只画真实的父子关系，来自会话头信息。没有"同项目"这种推断出来的虚线。
-- 节点颜色是离压缩点的距离：绿=还早，黄=注意，红=临界。
-- 节点大小跟会话的用量有关，一眼能看出哪个最重。
+- 边来自会话头的 `parentSession`，不推断"同项目"这类弱关系。
+- 节点颜色表示**距离压缩点的远近**：正常 / 注意 / 临界。
+- 节点尺寸关联该会话的累计用量。
+- 选中节点后，下图三个模块按该节点的子树重新计算。
 
 ![智能体脉络](./docs/03-graph.png)
 
-点任意节点，下面三块跟着切到那个会话：
+### 三个模块
 
-**上下文构成** 说的是此刻模型看到了什么。饼图分九类：系统提示、工具定义、用户消息、输入内容、
-技能加载、工具调用、模型思考、模型回复。旁边标着「当前」——这是快照，不是累计。
+**上下文构成** — 当前 prompt 的九类占比：系统提示、工具定义、用户消息、注入内容、技能加载、
+工具调用、思考、回复。标注「当前」，是快照。
 
-**累计用量与费用** 说的是这个会话一共烧了多少。四个桶相加：输入、缓存读、缓存写、输出，
-旁边标「合计」。缓存命中率高的时候，输入很便宜，输出反而占大头。
+**累计用量与费用** — 四个 token 桶相加（未命中 / 缓存读 / 缓存写 / 输出），标注「合计」，
+与「当前占用」分开统计，不是同一个量。
 
-**会话矩阵** 是每个会话一行：模型、上下文档位（格子数）、占用率、轮次。点任意一行直接进那个会话。
+**会话矩阵** — 每会话一行：模型、窗口占用、风险级别、轮次。点击进入会话。
 
-![选中一个子代理，右侧是会话详情](./docs/04-graph-selected.png)
+![选中子代理后的联动](./docs/04-graph-selected.png)
 
-## 什么时候该交接
+## 上下文监控
 
-每个会话有一个**压缩点**，DSH 到那里会把早期对话换成摘要。这个点不是固定百分比：
+压缩点由模型窗口和输出预留共同决定，不是固定百分比：
 
 ```
-压缩点 = min(窗口 × 80%, 窗口 − 最大输出 − 64K 余量)
+compaction point = min(window × 80%, window − max output − 64K headroom)
 ```
 
-两个原因：留出 20% 给回复和后续输入；再扣掉模型的最大输出预留，否则压缩完没有空间生成内容。
-所以 1M 窗口、256K 输出的模型，压缩点在 69% 左右，不是 80%。
+`window × 80%` 留出回复与后续输入的空间；减去输出预留，是因为压缩后仍需生成内容。
+1M 窗口、256K 输出的模型，压缩点约 69%，而非 80%。
 
-压缩点之上画两条线：
-
-| 线 | 值 | 意思 |
+| 阈值 | 计算 | 含义 |
 |---|---|---|
-| 注意 | 压缩点 × 80% | 还能撑一次较长的回复 |
-| 临界 | 压缩点 × 92% | 下一次大请求就可能触发压缩 |
+| 注意 | 压缩点 × 80% | 仍可容纳一次较长回复 |
+| 临界 | 压缩点 × 92% | 下一次大请求可能触发压缩 |
 
-占用率本身取**服务端返回的 prompt 大小**（未命中 + 缓存读 + 缓存写），加上上次采样之后的增量。
-不是"4 个字符 ≈ 1 token"那种估法。
+占用率取**服务端返回的 prompt 大小**（未命中 + 缓存读 + 缓存写），叠加最后一次采样后的增量，
+不使用字符数估算。
 
-## 交接怎么用
+## 交接协议 v1
 
-点右上角按钮，复制里面那段提示词，回到你要交接的会话发出去。四步：
+按钮生成一段提示词，发进会话后由 Agent 产出结构化交接物：
 
-1. 复制 → 发进下面那个会话
-2. 它会写出 `HANDOFF-<时间>.md`：目标、进度、关键文件、已否决的方案、未决问题
-3. 回复末尾给你一段接管消息
-4. 新建会话，把那段粘进去
+1. 复制提示词 → 发进目标会话
+2. Agent 写出 `HANDOFF-<timestamp>.md`：目标、进度、关键文件、已否决方案、未决问题
+3. 回复末尾给出接管消息
+4. 新建会话，粘贴接管消息
 
-插件负责复制和定位——选中的窗格会闪一下，避免粘错地方。
+插件负责复制与定位：目标窗格会闪烁一次，避免粘错会话。
 
 ![通用交接提示词](./docs/05-handoff.png)
 
-## 费用怎么算
+## 费用口径
 
-人民币，DeepSeek 自家模型直接查官方价目表（元 / 百万 token，谷时）：
+人民币。DeepSeek 自家模型读官方价目表（元 / 百万 token，谷时）：
 
 | 模型 | 缓存命中 | 缓存未命中 | 输出 |
 |---|---|---|---|
 | V4.1 Flash（`deepseek-flash`，旧名 `deepseek-v4-flash`） | 0.02 | 1 | 4 |
 | V4 Pro（`deepseek-v4-pro`） | 0.15 | 4.5 | 13.5 |
 
-峰时（北京时间工作日 09:00–12:00、14:00–18:00，节假日除外）**翻倍**。
-`contextTimeline.cost` 本来就把用量按峰谷分好桶，直接各算各的，不自己判断时间。
-第三方路由才回退 models.dev 美元价，按 `1 CNY = 0.15 USD` 折算。
+峰时（北京时间工作日 09:00–12:00、14:00–18:00，节假日除外）**×2**。
+`contextTimeline.cost` 已按峰谷分桶，直接分桶计算，不做时间推断。
+非 `deepseek` provider 回退 models.dev 美元价，按 `1 CNY = 0.15 USD` 折算。
 
-## 和 dsh-context 的关系
+## 与 dsh-context 的关系
 
-`dsh-context` 是这个生态里做得最深的上下文分析插件，也是我们参考最多的一个——上下文占用怎么读、
-费用怎么按峰谷折算、面板该长什么样，都从它那儿学了不少。
+`dsh-context` 是这个生态里上下文分析做得最深的插件，也是本项目参考最多的一个：上下文占比怎么读、
+费用如何按峰谷折算、面板信息怎么组织，都从它那里学了不少。它的 Fleet 页把当前 Agent 家族画成
+Agent Network，我们用同样的父子关系模型，但放在跨项目的全局视图里。
 
-所以有两件事特意跟它对齐：
+两处刻意对齐：
 
-- **口径一致**：同样按 `1 CNY = 0.15 USD`、峰时 ×2 折算，两个面板的费用可以直接对账，不会差一个汇率。
-- **分工明确**：要逐请求看上下文怎么长起来的、某一步到底装了什么，用它的 Context 页和趋势图；
-  要同时开几个会话干活、判断哪个该交接，用这里。
+- **口径一致**：同样的 `1 CNY = 0.15 USD` 与峰时 ×2，两个面板的费用可以对账。
+- **职责分开**：逐请求追溯上下文构成、查看某一步装了什么，用它的 Context 标签页与趋势图；
+  同时跑多个会话、判断谁该交接，用这里。
 
-两个可以一起装，互不冲突。
+两者可同时安装，互不冲突。
 
 ## 安装
 
-**插件管理器**：`插件 → 发现`，搜 `dsh-session-matrix`，安装。
+**插件管理器**：`插件 → 发现`，搜索 `dsh-session-matrix`。
 
 **CLI**：
 
 ```bash
 dsh plugin --profile web add dsh-session-matrix
+dsh plugin --profile web update dsh-session-matrix@latest   # 升级
 ```
 
-**本地源码**（开发用）：把仓库路径写进 profile 的 `dependencies` 和 `dsh.profile.bundles`，
-然后 `pnpm install`，重启 DSH。侧栏面板列表里会出现入口。
+无需构建步骤，无需重启 DSH。浏览器若未刷新，硬刷新一次（`Ctrl/Cmd + Shift + R`）。
 
-## 要求与兼容
+**源码**：把仓库路径写入 profile 的 `dependencies`（`link:`）与 `dsh.profile.bundles`，
+执行 `pnpm install` 后重启。
+
+## Requirements
 
 | 项 | 值 |
 |---|---|
-| DeepSeek Harness | `>= 0.2.2-rc.1`（写在 `dsh.compatibility` 里） |
+| DeepSeek Harness | `>= 0.2.2-rc.1`（`dsh.compatibility.dshReleases`） |
 | Node.js | `^22.19.0` 或 `>= 24` |
-| 实测环境 | DSH `0.2.2-rc.x` + Windows 11 |
+| 实测 | DSH `0.2.2-rc.x`，Windows 11 |
 | 未实测 | macOS、Linux |
-| 运行时依赖 | 无（两个 JS 文件，无构建步骤） |
+| 运行时依赖 | 无（两个 JS 文件，无构建） |
 
-## 已知限制
+## Known limitations
 
-- 只对 DeepSeek 模型按人民币计价，其他 provider 走 models.dev 美元价。
-- 子代理用量按会话分别统计，不折进父会话（在脉络里选中主会话时，下面三块会按子树汇总）。
-- 法定节假日没建模，峰谷桶由宿主给。
-- 归档状态读自 `storages/workspace.json`，DSH 以后要是改了表结构，需要跟着改。
-- macOS / Linux 没在真机上跑过。代码里没有平台分支，但"没写 if"不等于"测过"。
+- 仅 DeepSeek 模型按人民币计价；其他 provider 走 models.dev 美元价。
+- 子代理用量按会话独立统计，不并入父会话（在脉络里选中主会话时，模块按子树汇总）。
+- 法定节假日未建模，峰谷桶由宿主提供。
+- 归档集合读自 `storages/workspace.json`；DSH 若调整该表的存储结构，需同步修改读取逻辑。
+- macOS / Linux 未在真机验证。代码中没有平台分支，但"没写 `if`"不等于"测过"。
+
+## 架构
+
+```
+lib/index.js       宿主半边：Cordis 插件，三个 JSON 路由，读投影，价格表
+lib/client.js      浏览器半边：React 面板，两个视图，交接弹窗
+lib/handoff/v1.md  交接协议，以数据形式发布
+test/host.test.mjs 29 个契约测试（不联网，伪造 DSH 上下文）
+```
+
+宿主不渲染，客户端不读文件；数据只走三条路由。渲染异常由面板内的错误边界接住，
+单个组件出错不会让整个 DSH 窗口空白。
 
 ## 开发
 
 ```bash
-npm test          # 29 个契约测试，不联网
-npm pack --dry-run
+npm test            # 29 个契约测试，不联网
+npm pack --dry-run  # 约 10 个文件 / 72 KB
 ```
 
-宿主半边 `lib/index.js` 只做三件事：读投影、算费用、提供三个 JSON 路由。
-浏览器半边 `lib/client.js` 不读文件。渲染出错有错误边界兜着，不会把整个 DSH 窗口搞白。
+无构建步骤；修改 `lib/client.js` 后 DSH 会热重载面板。
+
+## License
+
+[MIT](./LICENSE)
 
 ---
 
 ## English
 
-DSH Session Matrix adds one sidebar entry to DeepSeek Harness. Inside are two tabs.
+**A multi-agent workspace for DeepSeek Harness.** One sidebar entry, two views: up to four native
+conversation panes, and an Agent Graph that draws `workbench → project → session → subagent` coloured
+by compaction risk. A handoff protocol moves work to a fresh session before compaction drops the details.
 
-**Workspace** — a session list (grouped by project, subagents folded, archived hidden) and up to four
-panes. Each pane is a real native conversation: you can type in it. Two panes split left/right, three
-stack two-over-one, four is a 2×2 grid. Dividers drag; each pane has a 55–100% zoom.
+```bash
+dsh plugin --profile web add dsh-session-matrix
+```
 
-**Agent Flow** — a left-to-right graph `workbench → project → session → subagent`, with edges taken
-from the session headers and node colour driven by distance to the compaction point. Selecting a node
-re-scopes three modules: context composition, cumulative usage and cost, and a per-session matrix.
+**Workspace** — session list grouped by project (subagents folded, archived hidden) plus 1–4 panes.
+Layouts: 1 full, 2 columns, 3 as two-over-one, 4 as 2×2. Dividers drag; each pane zooms 55–100%.
+Every pane runs DSH's own `conversation.content` factory, so messages, tool rows, approvals, and the
+composer are native.
 
-**Handoff** — a button that copies a protocol-v1 prompt. Paste it into a session and the agent writes
-`HANDOFF-<timestamp>.md` (goal, progress, key files, rejected approaches, open questions) plus a
-takeover message for the next session.
+**Agent Graph** — a directed four-column topology. Edges come from `parentSession` in the session
+header; node colour is distance to the compaction point; node size tracks cumulative usage. Selecting a
+node re-scopes three modules: prompt composition, cumulative usage and cost, and a per-session matrix.
 
-Compaction point is `min(window × 80%, window − max output − 64K)`; the watch line sits at 80% of that
-point and the critical line at 92%. Occupancy comes from the provider-reported prompt size, not a
-character-count estimate.
+**Context** — compaction point is `min(window × 80%, window − max output − 64K)`; the watch line sits
+at 80% of that point, the critical line at 92%. Occupancy uses the provider-reported prompt size, not a
+character estimate.
 
-Requires DSH `>= 0.2.2-rc.1`, Node `^22.19` or `>= 24`, no runtime dependencies. Verified on
-Windows 11 with DSH `0.2.2-rc.x`; macOS and Linux are untested. Cost is CNY using DeepSeek's official
-price list, peak hours at 2×; other providers fall back to models.dev in USD.
+**Handoff** — protocol v1 writes `HANDOFF-<timestamp>.md` (goal, progress, key files, rejected
+approaches, open questions) plus a takeover message for the next session; the target pane flashes so
+you paste into the right one.
 
-### Related plugins
+**Cost** — CNY, DeepSeek's official price list, peak hours at 2×; other providers fall back to
+models.dev in USD at `1 CNY = 0.15 USD`.
 
-`dsh-context` goes much deeper on context analysis — use it to see how a request was assembled. This
-plugin is the operations side: run several sessions, see which needs attention, hand it off. They are
-meant to be installed together, and they share the same CNY conversion so the numbers reconcile.
+**Requirements** — DSH `>= 0.2.2-rc.1`, Node `^22.19` or `>= 24`, no runtime dependencies. Verified on
+Windows 11 with DSH `0.2.2-rc.x`; macOS and Linux are untested.
 
-Split views also exist (`dsh-session-grid`, `dsh-multi-session`, `dsh-multi-chat`), as do graphs
-(`dsh-session-map`) and handoff helpers (`dsh-context-relay`, `dsh-handoff-kit`). This one puts the
-three in a single panel; if you only need one of them, those are lighter choices.
+### Relationship to dsh-context
 
-## License
+`dsh-context` is the deeper context-analysis plugin in this ecosystem and the main reference for this
+one — its Fleet page draws the current agent family as an Agent Network, and this plugin uses the same
+parent-child model across all projects. Both use the same CNY conversion and peak-hour multiplier, so
+cost figures reconcile. Install both: use `dsh-context` to trace how a request was assembled, use this
+one to run several sessions and decide which to hand off.
 
-[MIT](./LICENSE)
+### Related work
+
+Split views exist (`dsh-session-grid`, `dsh-multi-session`, `dsh-multi-chat`), as do session-tree maps
+(`dsh-session-map`) and handoff helpers (`dsh-context-relay`, `dsh-handoff-kit`). This plugin puts
+panes, the graph, and the handoff in one panel; if you need only one of them, those are lighter.
