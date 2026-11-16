@@ -2,6 +2,13 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.15.2] — 2026-11-17
+
+### 文档
+- 贡献者名单改用 all-contributors 规范（`.all-contributorsrc` + README 头像表），补上
+  bowenliang123 / dsh-context 作为思路与数据口径来源。
+- `llms.txt` 与 `locale/en.json` 里最后一处 `Agent Flow` 统一为 `Agent Graph`。
+
 ## [0.15.1] — 2026-11-17
 
 ### 修复

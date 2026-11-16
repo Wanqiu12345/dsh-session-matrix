@@ -177,12 +177,17 @@ Agent Network，我们用同样的父子关系模型，但放在跨项目的全�
 
 ## 贡献者
 
-- [Wanqiu12345](https://github.com/Wanqiu12345) — 设计与实现
-- [dsh-context](https://github.com/bowenliang123/dsh-context)（bowenliang123） — 不是代码贡献者，
-  但这个项目的数据口径、费用折算方式和面板结构大量参考了它，`contextTimeline` 的字段形状也是照着它定的。
-  没有它作为对照，这个插件的信息组织会差很多。
+<!-- ALL-CONTRIBUTORS-LIST:START -->
+| <img src="https://github.com/Wanqiu12345.png?size=64" width="64" alt="Wanqiu12345"><br><sub><b>Wanqiu12345</b></sub><br><sub>代码 · 设计 · 文档</sub> | <img src="https://github.com/bowenliang123.png?size=64" width="64" alt="bowenliang123"><br><sub><b>bowenliang123</b></sub><br><sub><a href="https://github.com/bowenliang123/dsh-context">dsh-context</a></sub><br><sub>思路 · 数据口径 · 调研</sub> |
+|:--:|:--:|
+<!-- ALL-CONTRIBUTORS-LIST:END -->
 
-GitHub 右侧的 Contributors 只统计提交，所以 dsh-context 不会出现在那里——它出现在这里。
+名单遵循 [all-contributors](https://allcontributors.org/) 规范，见 `.all-contributorsrc`。
+
+`bowenliang123` 不是代码贡献者：**dsh-context** 是这个生态里上下文分析做得最深的插件，本项目的
+`contextTimeline` 字段形状、峰谷折算口径和面板信息组织都参照它定；没有它作为对照，这个插件的信息组织会差很多。
+
+GitHub 右侧的 Contributors 只统计**提交作者**，所以不会出现 `bowenliang123`——这份名单是补那一块的。
 
 ---
 

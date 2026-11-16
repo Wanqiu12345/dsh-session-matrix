@@ -8,7 +8,7 @@ two views to the web/desktop app:
 
 - **Workspace** — a session list plus 1–4 panes, where every pane is a real native conversation
   (DSH's own `conversation.content` factory), not a preview or a mirror.
-- **Agent Flow** — a layered graph `workbench → project → main session → subagent`, coloured by each
+- **Agent Graph** — a layered graph `workbench → project → main session → subagent`, coloured by each
   session's distance to its compaction point, with three modules underneath: context composition,
   cumulative usage and cost, and a session matrix.
 

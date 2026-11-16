@@ -1,0 +1,25 @@
+{
+  "projectName": "dsh-session-matrix",
+  "projectOwner": "Wanqiu12345",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "files": ["README.md"],
+  "imageSize": 64,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "Wanqiu12345",
+      "name": "Wanqiu12345",
+      "avatar_url": "https://github.com/Wanqiu12345.png?size=64",
+      "profile": "https://github.com/Wanqiu12345",
+      "contributions": ["code", "design", "doc"]
+    },
+    {
+      "login": "bowenliang123",
+      "name": "bowenliang123 (dsh-context)",
+      "avatar_url": "https://github.com/bowenliang123.png?size=64",
+      "profile": "https://github.com/bowenliang123/dsh-context",
+      "contributions": ["ideas", "data", "research"]
+    }
+  ]
+}
