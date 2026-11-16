@@ -5,8 +5,10 @@
 ## [0.14.5] — 2026-11-17
 
 ### 修复
-- **不再依赖 dsh-context**。核心  投影的值以  包装返回，之前没有解包，导致没装 dsh-context 时用量与费用全空。现在解包后四个 token 桶都能读，费用按谷时价估算；装了 dsh-context 仍走它的峰谷分桶，价格更准。
-- 计价改用回退后的模型名（），不再要求  存在。
+- **不再依赖 dsh-context**。核心 `tokenUsage` 投影的值以 `{ver,seq,val}` 包装返回，之前没有解包，
+  导致没装 dsh-context 时用量与费用全空。现在解包后四个 token 桶都能读，费用按谷时价估算；
+  装了 dsh-context 仍走它的峰谷分桶，价格更准。
+- 计价改用回退后的模型名（`modelSelection`），不再要求 `contextTimeline` 存在。
 
 ### 文档
 - README 增加「贡献者」一节，写明 dsh-context 的参考价值；新增测试覆盖包装形状的投影值。
