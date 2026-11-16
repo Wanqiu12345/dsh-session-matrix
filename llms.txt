@@ -44,9 +44,12 @@ If you only run one session, you do not need this.
   `dsh-multi-chat` also do that; some have tabs and tmux-style splitting this plugin lacks.
 - It does not price non-DeepSeek models in CNY.
 - It has no telemetry and makes no network request except an optional `models.dev` price fetch.
-- Cost figures come from the `contextTimeline` / `contextActivity` projections registered by
-  `dsh-context`. Without that plugin the cost column is empty; model names, context occupancy, the graph
-  and handoff keep working.
+- It does not depend on other plugins. Model names, usage totals and context occupancy come from core
+  DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`). With `dsh-context` installed the
+  cost is exact to the peak/off-peak split; without it the cost is priced at the off-peak rate.
+- Credit: the data shapes and pricing rules follow `dsh-context` (bowenliang123), which is the deeper
+  context-analysis plugin in this ecosystem. It is not a code dependency and does not appear in GitHub's
+  contributor list, which counts commits only.
 
 ## Links
 

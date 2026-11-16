@@ -149,23 +149,33 @@ compaction point = min(window × 80%, window − max output − 64K headroom)
 
 <a id="vs-context"></a>
 
-## 与 dsh-context 的关系
+## 致谢与 dsh-context 的关系
 
-`dsh-context` 是这个生态里上下文分析做得最深的插件，也是本项目参考最多的一个：上下文占比怎么读、
-费用如何按峰谷折算、面板信息怎么组织，都从它那里学了不少。它的 Fleet 页把当前 Agent 家族画成
+`dsh-context` 是这个生态里上下文分析做得最深的插件，也是本项目参考最多的一个：上下文占比怎么拆、
+费用怎么按峰谷折算、面板信息怎么组织，都从它那里学了不少。它的 Fleet 页把当前 Agent 家族画成
 Agent Network，我们用同样的父子关系模型，但放在跨项目的全局视图里。
 
-两处刻意对齐：
+**它现在是可选的，不是依赖。** 早期版本读的是它注册的 `contextTimeline` / `contextActivity` 投影，
+没装它费用就是空的；现在两条数据都改走 DSH 核心：
 
-| | 做法 |
-|:--|:--|
-| **口径一致** | 同样的 `1 CNY = 0.15 USD` 与峰时 ×2，两个面板的费用可以对账 |
-| **职责分开** | 逐请求追溯上下文用它的 Context 页；跑多个会话、判断谁该交接用这里 |
+| 数据 | 现在从哪来 | 没装 dsh-context 时 |
+|:--|:--|:--|
+| 模型名 | 核心 `modelSelection` 投影 | 正常 |
+| 用量（四个 token 桶） | 核心 `tokenUsage` 投影（`{ver,seq,val}` 包装已解） | 正常 |
+| 上下文占用 | 核心 `contextPressure` | 正常 |
+| 费用 | 有峰谷分桶时精确计价，没有时按**谷时价**估算 | 显示估算值 |
 
-两者可同时安装，互不冲突。
+装它的收益是**费用更准**（能区分峰谷，等于把白天的 2× 算进去），以及 Context 页那种逐请求的深挖。
+两者可同时安装，互不冲突，人民币换算与峰时倍率一致，数字可以对账。
 
-**一个实际依赖**：费用数字与「合计」用量来自 dsh-context 注册的 `contextTimeline` / `contextActivity` 投影。
-没装它时，费用一栏是空的，模型名、上下文占用、脉络图、交接都照常工作——模型名走的是核心的 `modelSelection` 投影。
+## 贡献者
+
+- [Wanqiu12345](https://github.com/Wanqiu12345) — 设计与实现
+- [dsh-context](https://github.com/bowenliang123/dsh-context)（bowenliang123） — 不是代码贡献者，
+  但这个项目的数据口径、费用折算方式和面板结构大量参考了它，`contextTimeline` 的字段形状也是照着它定的。
+  没有它作为对照，这个插件的信息组织会差很多。
+
+GitHub 右侧的 Contributors 只统计提交，所以 dsh-context 不会出现在那里——它出现在这里。
 
 ---
 

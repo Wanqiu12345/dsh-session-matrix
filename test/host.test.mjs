@@ -80,6 +80,7 @@ function loadFixture() {
       { header: { id: 'session-a', createdAt: 1, cwd: '/work/Alpha', isSeeded: false }, live: true, persisted: true },
       { header: { id: 'session-b', createdAt: 2, cwd: '/work/Alpha', parentSession: 'session-a', isSeeded: false, origin: 'subagent' }, live: false, persisted: true },
       { header: { id: 'session-stub', createdAt: 4, cwd: '/work/Alpha', isSeeded: false }, live: false, persisted: true },
+      { header: { id: 'session-wrapped', createdAt: 5, cwd: '/work/Alpha', isSeeded: false }, live: false, persisted: true },
     ]
     const projections = new Map([
       ['session-a', {
@@ -98,6 +99,14 @@ function loadFixture() {
         title: 'Alpha task',
         sessionListMetadata: { blank: false, lastPromptAt: 3 },
       }],
+      ['session-wrapped', {
+        contextTimeline: null,
+        // Real hosts wrap the projection value as { ver, seq, val }.
+        tokenUsage: { ver: 2, seq: 9, val: { totals: { uncachedInputTokens: 1200, outputTokens: 800, cacheReadTokens: 300, cacheWriteTokens: 0 } } },
+        contextActivity: null,
+        title: 'Wrapped usage',
+        sessionListMetadata: { blank: false, lastPromptAt: 5 },
+      }],
       ['session-stub', {
         contextTimeline: null,
         contextActivity: null,
@@ -107,7 +116,7 @@ function loadFixture() {
     ])
     return {
       records,
-      workspaces: [{ id: 'w1', title: 'Alpha', path: '/work/Alpha', sessionIds: ['session-a', 'session-b', 'session-stub'] }],
+      workspaces: [{ id: 'w1', title: 'Alpha', path: '/work/Alpha', sessionIds: ['session-a', 'session-b', 'session-stub', 'session-wrapped'] }],
       projections,
     }
   }
@@ -361,6 +370,14 @@ async function main() {
       assert.ok('costUsd' in s, `${s.id} has no costUsd field`)
       assert.ok(s.costUsd === null || typeof s.costUsd === 'number')
     }
+    // A wrapped { ver, seq, val } projection must still yield usage — that is what
+    // keeps cost working on a host without dsh-context.
+    const wrapped = byId.get('session-wrapped')
+    if (wrapped) {
+      assert.ok(wrapped.usage, 'wrapped tokenUsage should produce usage')
+      assert.equal(wrapped.usage.cacheRead, 300)
+    }
+
     assert.equal(body.pricing.enabled, false, 'prices:false must reach the payload')
     assert.equal(body.pricing.ready, false)
   })
