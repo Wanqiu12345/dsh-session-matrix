@@ -2,6 +2,25 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.16.1] — 2026-11-17
+
+### 修复
+- **峰谷时间戳与文档不符。** 顶层 `usage` 存在时，`usageOfEvent()` 返回的是结算事件时间，而不是 usage
+  分片自己的时间。数值仍取顶层，时间戳改为**始终优先分片 `record.time`**，无分片才回退。
+  真实日志 5,456 个结算事件的 usage 分片数量只出现 0 或 1，故规则定为「取唯一分片；若出现多个取最后一个」。
+- **revision 缓存违反语义。** 旧实现会对「增长 < 256 KB 且 60 秒内」的 revision 变化返回旧值。
+  现在 revision 相同才命中，变了必须重读；成本改由每轮预算与 `inflightSplits` 并发合并控制。
+- **Persistence 没真正独立。** 之前先要求 zstd、先建文件索引，才轮到 persistence。现在拆成两阶段：
+  阶段 1 只走 `stat/open/read`（不碰 zlib、不建索引），阶段 2 才回退到文件扫描。
+
+### 变更
+- `files` 加入 `test/`：此前 `npm test` 在白名单外，发布包内无法运行。
+- `v0.16.0` 标签前移到包含审计报告的 commit，main / tag / Release 现在同 SHA。
+
+### 测试
+- `host` 35 条（新增 3 条 revision 语义 + 1 条无索引读取）、`usage-split` 20 条（新增 4 条边界 + 1 条多分片）、
+  对账 37/37 全部重跑。
+
 ## [0.16.0] — 2026-11-17
 
 ### 安全（破坏性）

@@ -206,6 +206,63 @@ check('peak classification uses the usage chunk time, not the settlement time', 
   assert(split.off.uncached === 0, 'must not be classified as off-peak')
 })
 
+check('a top-level usage still takes the chunk time across the morning boundary', () => {
+  // Event at 08:59:59.999 (off-peak), chunk at 09:00:00.001 (peak).
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: beijing(2026, 11, 16, 8, 59, 59) + 999,
+    data: {
+      usage: { inputTokens: 11, outputTokens: 1 },
+      stream: [usageChunk(beijing(2026, 11, 16, 9, 0, 0) + 1, { inputTokens: 999, outputTokens: 99 })],
+    },
+  })
+  const split = splitUsageText(event)
+  assert(split.peak.uncached === 11, `numbers must come from the top-level usage, got ${split.peak.uncached}`)
+  assert(split.off.uncached === 0, 'the chunk time (09:00:00.001) makes this peak, not off-peak')
+})
+
+check('a top-level usage still takes the chunk time across the noon boundary', () => {
+  // Event at 11:59:59.999 (peak), chunk at 12:00:00.001 (off-peak).
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: beijing(2026, 11, 16, 11, 59, 59) + 999,
+    data: {
+      usage: { inputTokens: 12, outputTokens: 2 },
+      stream: [usageChunk(beijing(2026, 11, 16, 12, 0, 0) + 1, { inputTokens: 888, outputTokens: 88 })],
+    },
+  })
+  const split = splitUsageText(event)
+  assert(split.off.uncached === 12, `numbers from top-level, time from chunk: ${JSON.stringify(split)}`)
+  assert(split.peak.uncached === 0, 'must not be peak')
+})
+
+check('without a chunk time the event time is used', () => {
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: beijing(2026, 11, 16, 10, 0),
+    data: { usage: { inputTokens: 30, outputTokens: 3 }, stream: [{ type: 'chunk', chunk: { type: 'text', text: 'x' } }] },
+  })
+  const split = splitUsageText(event)
+  assert(split.peak.uncached === 30, 'event time is peak, so this is peak')
+})
+
+check('several usage chunks settle on the last one, never summed', () => {
+  const at = beijing(2026, 11, 16, 10, 0)
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: at,
+    data: {
+      stream: [
+        usageChunk(at, { inputTokens: 10, outputTokens: 1 }),
+        usageChunk(at, { inputTokens: 40, outputTokens: 4 }),
+      ],
+    },
+  })
+  const split = splitUsageText(event)
+  assert(split.requests === 1, `requests ${split.requests}`)
+  assert(split.peak.uncached === 40, `expected the last snapshot (40), got ${split.peak.uncached}`)
+})
+
 check('cache buckets accumulate separately', () => {
   const at = beijing(2026, 11, 16, 10, 0)
   const a = JSON.stringify({ type: 'assistant/message', time: at, data: { usage: { inputTokens: 10, outputTokens: 1, cacheReadTokens: 1000, cacheWriteTokens: 20 } } })

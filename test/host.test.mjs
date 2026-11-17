@@ -9,7 +9,7 @@
 
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { homedir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { apply, costOfBuckets } from '../lib/index.js'
 
@@ -131,6 +131,21 @@ function loadFixture() {
 function makeCtx(fixture, opts = {}) {
   const routes = new Map()
   const state = { events: [], warnings: [], infos: [] }
+  const noIndexHome = join(tmpdir(), `sm-no-index-${process.pid}-${Math.random().toString(36).slice(2)}`)
+  const persistence = {
+    revision: 'r1',
+    sizeBytes: 2048,
+    opens: 0,
+    stats: 0,
+    closed: 0,
+    opened: [],
+    // One peak request and one off-peak request, so the split is non-trivial.
+    events: [
+      { seq: 1, type: 'assistant/message', time: Date.UTC(2026, 10, 16, 2, 0), data: { usage: { inputTokens: 100, outputTokens: 10 } } },
+      { seq: 2, type: 'assistant/attempt', time: Date.UTC(2026, 10, 16, 12, 0), data: { stream: [{ type: 'chunk', time: Date.UTC(2026, 10, 16, 12, 0), chunk: { type: 'usage', usage: { inputTokens: 200, outputTokens: 20 } } }] } },
+    ],
+  }
+  state.persistence = persistence
 
   const sessionProjections = opts.withProjections === false ? undefined : {
     snapshot: (session, keys) => {
@@ -206,6 +221,27 @@ function makeCtx(fixture, opts = {}) {
       },
     },
     sessions: { list: () => [] },
+    // Official persistence double. `revision` is the change token the plugin is
+    // supposed to trust; `opens` counts real reads so a stale-cache bug shows up
+    // as a missing open instead of a silently old number.
+    sessionPersistence: opts.persistence === false ? undefined : {
+      stat: async id => {
+        persistence.stats += 1
+        return { header: { id }, revision: persistence.revision, sizeBytes: persistence.sizeBytes }
+      },
+      open: async (id, access) => {
+        if (access !== 'read') throw new Error('unexpected access')
+        persistence.opens += 1
+        persistence.opened.push(persistence.revision)
+        return {
+          read: async () => ({ eventState: 'owned', events: persistence.events }),
+          close: async () => { persistence.closed += 1 },
+        }
+      },
+    },
+    // A home path with no sessions directory: the persistence path must not need
+    // the file index, and this proves it (indexSessionLogs returns an empty map).
+    dshHomePath: (...parts) => join(noIndexHome, ...parts),
     effect: fn => { const d = fn(); return d },
     on: (name, handler) => { state.events.push(name); return () => {} },
   }
@@ -234,6 +270,10 @@ async function main() {
 
   const check = (label, fn) => {
     try { fn(); pass.push(label) } catch (error) { fail.push(`${label}: ${error.message}`) }
+  }
+  /** Same, for checks that must await a request. */
+  const checkAsync = async (label, fn) => {
+    try { await fn(); pass.push(label) } catch (error) { fail.push(`${label}: ${error.message}`) }
   }
 
   // ── 1. Normal path ───────────────────────────────────────────────────────
@@ -613,6 +653,61 @@ async function main() {
   const forced = await hit(routes, '/api/session-matrix/overview', 'refresh=1')
   check('refresh=1 recollects', () => {
     assert.ok(forced.body.generatedAt >= first.body.generatedAt)
+  })
+
+  // ── persistence: revision semantics ──────────────────────────────────────
+  // These run against the fake sessionPersistence in makeCtx; they would fail on
+  // the previous implementation, which ignored a revision bump under 256 KB and
+  // required the log-file index before it ever called persistence.
+
+  const persistence = state.persistence
+
+  check('persistence answers without a log-file index or zstd', () => {
+    assert.ok(persistence.opens > 0, 'no session was read through persistence')
+    const splitSession = body.sessions.find(s => s.costSource === 'log' || s.costSource === 'totals')
+    assert.ok(splitSession, 'expected a session priced from the split')
+  })
+
+  // Warm every session past the per-collect budget first; otherwise "opens"
+  // grows because more sessions are being visited, not because a cache missed.
+  for (let round = 0; round < 12; round += 1) {
+    const beforeWarm = persistence.opens
+    await hit(routes, '/api/session-matrix/overview', 'refresh=1')
+    if (persistence.opens === beforeWarm) break
+  }
+
+  await checkAsync('same revision is a cache hit, not a second read', async () => {
+    const before = persistence.opens
+    await hit(routes, '/api/session-matrix/overview', 'refresh=1')
+    assert.equal(persistence.opens, before, 'an unchanged revision must not reopen the handle')
+  })
+
+  await checkAsync('a revision bump re-reads even when the log barely grew', async () => {
+    const before = persistence.opens
+    persistence.revision = 'r2'
+    persistence.sizeBytes += 1024 // 1 KB, far below the old 256 KB throttle
+    await hit(routes, '/api/session-matrix/overview', 'refresh=1')
+    assert.ok(persistence.opens > before, 'a new revision must trigger a read')
+  })
+
+  await checkAsync('concurrent collects do not double-read one revision', async () => {
+    // Warm r3 on one collect, then fire two overlapping collects at r4.
+    persistence.revision = 'r3'
+    await hit(routes, '/api/session-matrix/overview', 'refresh=1')
+    persistence.revision = 'r4'
+    const before = persistence.opens
+    await Promise.all([
+      hit(routes, '/api/session-matrix/overview', 'refresh=1'),
+      hit(routes, '/api/session-matrix/overview', 'refresh=1'),
+    ])
+    const reads = persistence.opens - before
+    // Two collects run concurrently; without the in-flight map each would open
+    // its own handle for the same revision.
+    // Each collect may touch up to logBudget sessions (6). Without the in-flight
+    // map the two overlapping collects would open 12 handles; with it, one per
+    // session per revision.
+    assert.ok(reads > 0, 'a new revision must be read at least once')
+    assert.ok(reads <= 6, `overlapping collects opened ${reads} handles, expected <= 6`)
   })
 
   // ── Report ───────────────────────────────────────────────────────────────
