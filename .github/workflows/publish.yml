@@ -21,6 +21,11 @@ permissions:
 
 jobs:
   publish:
+    # Until the package names this workflow as a trusted publisher on npm, a
+    # tag push has no way to authenticate: the job would go red on every
+    # release while publishing is still done by hand. Flip the repository
+    # variable PUBLISH_ENABLED to "true" once the trusted publisher is set.
+    if: vars.PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
