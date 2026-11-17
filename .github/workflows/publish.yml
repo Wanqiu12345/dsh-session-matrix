@@ -54,13 +54,26 @@ jobs:
           '
 
       - name: Version must not already exist on npm
+        id: guard
         run: |
           version=$(node -p "require('./package.json').version")
           if npm view "dsh-session-matrix@${version}" version >/dev/null 2>&1; then
-            echo "dsh-session-matrix@${version} is already published; refusing to republish"
-            exit 1
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::dsh-session-matrix@${version} is already published"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "${version} is available"
           fi
-          echo "${version} is available"
+
+      # A tag push is a release intent, so republishing an existing version there
+      # is a real mistake and must fail loudly. A manual dispatch is usually a
+      # dry run, so it skips instead of turning the run red.
+      - name: Refuse to republish an existing version on a tag
+        if: steps.guard.outputs.exists == 'true' && github.ref_type == 'tag'
+        run: |
+          echo "refusing: this version is already on npm"
+          exit 1
 
       - name: Publish
+        if: steps.guard.outputs.exists == 'false'
         run: npm publish --provenance --access public
