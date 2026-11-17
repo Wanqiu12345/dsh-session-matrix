@@ -1,0 +1,65 @@
+name: publish
+
+# Publishes to npm through Trusted Publishing (OIDC): npm verifies this
+# workflow's identity, so no long-lived NPM_TOKEN is stored in the repository.
+#
+# Before this can run, the package must name this workflow as a trusted
+# publisher at https://www.npmjs.com/package/dsh-session-matrix/access :
+#   repository:  Wanqiu12345/dsh-session-matrix
+#   workflow:    publish.yml
+#   environment: (leave empty)
+# Repository name, workflow file name and their letter case all have to match.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  id-token: write # required to mint the OIDC token npm exchanges for publish rights
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          # No `registry-url`: that writes an .npmrc with an empty _authToken,
+          # which interferes with the OIDC exchange. npm defaults to the public
+          # registry anyway.
+
+      # Trusted Publishing needs npm >= 11.5; Node 22 still ships npm 10.x.
+      - name: Upgrade npm for OIDC publishing
+        run: npm install -g npm@latest && npm --version
+
+      # No dependencies, so nothing to install; the tests use Node built-ins.
+      - name: Test
+        run: npm test
+
+      - name: Tag must match package.json
+        run: |
+          node -e '
+            const version = require("./package.json").version;
+            const tag = process.env.GITHUB_REF_NAME;
+            if (`v${version}` !== tag) {
+              console.error(`tag ${tag} does not match package.json ${version}`);
+              process.exit(1);
+            }
+            console.log(`publishing ${version} for tag ${tag}`);
+          '
+
+      - name: Version must not already exist on npm
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if npm view "dsh-session-matrix@${version}" version >/dev/null 2>&1; then
+            echo "dsh-session-matrix@${version} is already published; refusing to republish"
+            exit 1
+          fi
+          echo "${version} is available"
+
+      - name: Publish
+        run: npm publish --provenance --access public
