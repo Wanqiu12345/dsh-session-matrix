@@ -82,6 +82,52 @@ check('multiple concatenated frames are all decompressed', () => {
   assert(split.requests === 2, `requests ${split.requests}`)
 })
 
+/**
+ * Hand-build a single-frame zstd stream with one raw block.
+ *
+ * Raw blocks let a test put arbitrary bytes — including the frame magic — inside
+ * a frame body, which a compressor would only produce by accident.
+ * @param payload - bytes to store verbatim.
+ * @param declaredSize - override the frame content size field.
+ * @returns a complete frame.
+ */
+const rawFrame = (payload, declaredSize = payload.length) => {
+  const body = Buffer.from(payload)
+  const out = [Buffer.from([0x28, 0xb5, 0x2f, 0xfd])]
+  // descriptor: single-segment (0x20), no checksum, no dict, fcs flag 0 → 1 byte
+  out.push(Buffer.from([0x20, declaredSize & 0xff]))
+  const blockHeader = Buffer.alloc(3)
+  const h = 1 | (0 << 1) | (body.length << 3)
+  blockHeader[0] = h & 0xff
+  blockHeader[1] = (h >>> 8) & 0xff
+  blockHeader[2] = (h >>> 16) & 0xff
+  out.push(blockHeader, body)
+  return Buffer.concat(out)
+}
+
+check('a magic inside a block body is not a frame boundary', () => {
+  // The payload carries the four magic bytes; a scanner that searched for magic
+  // would cut the frame in half here.
+  const payload = Buffer.concat([
+    Buffer.from('{"type":"note","text":"'),
+    Buffer.from([0x28, 0xb5, 0x2f, 0xfd]),
+    Buffer.from('"}\n'),
+  ])
+  const frame = rawFrame(payload)
+  const text = decompressFrames(frame, decode)
+  assert(text.length === payload.length, 'expected the whole payload, got ' + text.length + ' bytes')
+  const twice = decompressFrames(Buffer.concat([frame, frame]), decode)
+  assert(twice.length === payload.length * 2, 'two such frames must both decode')
+})
+
+check('a frame whose declared size disagrees with its output is dropped', () => {
+  // Declares 4 bytes, carries 20: the writer and the bytes disagree, so the
+  // frame cannot be trusted even though it decodes.
+  const frame = rawFrame(Buffer.from('{"a":1}\n{"b":2}\n'), 4)
+  const text = decompressFrames(frame, decode)
+  assert(text === '', 'expected nothing, got ' + JSON.stringify(text))
+})
+
 check('a truncated tail keeps what decoded', () => {
   const whole = Buffer.concat([
     frame([usageEvent(beijing(2026, 11, 16, 10, 0), 50, 5)]),

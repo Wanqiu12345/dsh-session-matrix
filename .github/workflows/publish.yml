@@ -3,17 +3,19 @@ name: publish
 # Publishes to npm through Trusted Publishing (OIDC): npm verifies this
 # workflow's identity, so no long-lived NPM_TOKEN is stored in the repository.
 #
-# Before this can run, the package must name this workflow as a trusted
-# publisher at https://www.npmjs.com/package/dsh-session-matrix/access :
-#   repository:  Wanqiu12345/dsh-session-matrix
-#   workflow:    publish.yml
-#   environment: (leave empty)
-# Repository name, workflow file name and their letter case all have to match.
+# A real publish requires a tag. `workflow_dispatch` exists for dry runs and for
+# re-running a release that already has a tag; it can never publish a branch
+# head, even if package.json has moved ahead of the last release.
 
 on:
   push:
     tags: ['v*']
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      publish_confirm:
+        description: 'Type "publish" to actually publish. Ignored unless the selected ref is a tag.'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -21,10 +23,7 @@ permissions:
 
 jobs:
   publish:
-    # Until the package names this workflow as a trusted publisher on npm, a
-    # tag push has no way to authenticate: the job would go red on every
-    # release while publishing is still done by hand. Flip the repository
-    # variable PUBLISH_ENABLED to "true" once the trusted publisher is set.
+    # Flip the repository variable PUBLISH_ENABLED to "true" to arm this job.
     if: vars.PUBLISH_ENABLED == 'true'
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +43,17 @@ jobs:
       # No dependencies, so nothing to install; the tests use Node built-ins.
       - name: Test
         run: npm test
+
+      - name: A branch ref only tests, it never publishes
+        if: github.ref_type != 'tag'
+        run: |
+          echo "::notice::ref ${GITHUB_REF_NAME} is a branch, so this run only tests. Publishing requires a v* tag."
+          {
+            echo "### Dry run"
+            echo ""
+            echo "Ref \`${GITHUB_REF_NAME}\` is a branch. Nothing was published."
+            echo "Push a \`v*\` tag to release."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Tag must match package.json
         if: github.ref_type == 'tag'
@@ -71,14 +81,18 @@ jobs:
           fi
 
       # A tag push is a release intent, so republishing an existing version there
-      # is a real mistake and must fail loudly. A manual dispatch is usually a
-      # dry run, so it skips instead of turning the run red.
+      # is a real mistake and must fail loudly.
       - name: Refuse to republish an existing version on a tag
         if: steps.guard.outputs.exists == 'true' && github.ref_type == 'tag'
         run: |
           echo "refusing: this version is already on npm"
           exit 1
 
+      # Publishing requires all of: a tag ref, a version npm does not have, and a
+      # tag push or an explicit confirmation on a manual run of that tag.
       - name: Publish
-        if: steps.guard.outputs.exists == 'false'
+        if: |
+          github.ref_type == 'tag' &&
+          steps.guard.outputs.exists == 'false' &&
+          (github.event_name == 'push' || inputs.publish_confirm == 'publish')
         run: npm publish --provenance --access public
