@@ -7,7 +7,7 @@
 <p align="center"><b>会话矩阵工作台</b> — 给 DeepSeek Harness 的多智能体工作台</p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/dsh-session-matrix"><img src="https://img.shields.io/npm/v/dsh-session-matrix?label=npm&color=blue" alt="npm"></a>
+  <a href="https://github.com/Wanqiu12345/dsh-session-matrix/releases"><img src="https://img.shields.io/github/v/release/Wanqiu12345/dsh-session-matrix?label=release&color=blue" alt="release"></a>
   <a href="https://github.com/Wanqiu12345/dsh-session-matrix/actions/workflows/ci.yml"><img src="https://github.com/Wanqiu12345/dsh-session-matrix/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT"></a>
   <img src="https://img.shields.io/badge/DSH-%E2%89%A50.2.2--rc.1-8a2be2" alt="DSH >= 0.2.2-rc.1">
@@ -194,6 +194,9 @@ GitHub 右侧的 Contributors 只统计**提交作者**，所以不会出现 `bo
 <a id="install"></a>
 
 ## 安装
+
+> **npm 上架状态**：0.16.1 尚未发布到 npm（`npm view dsh-session-matrix` 返回 404）。
+> 下面的插件管理器 / CLI 命令在发布后可用；在那之前请用「源码安装」。
 
 **插件管理器**：`插件 → 发现`，搜索 `dsh-session-matrix`。
 

@@ -2,6 +2,16 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.16.2] — 2026-11-17
+
+### 修复
+- README 顶部的 npm 徽章显示 `package not found`（包尚未上架），改为 release 徽章；安装段加一行上架状态说明。
+- 五张截图从 3071px 缩到 1200px：`docs/` 从 3.1 MB 降到 1.3 MB，页首加载明显变快。
+
+### 测试
+- 新增安全不变量用例：`connection` 缺失时必须**一个路由都不注册**（防止回退成无鉴权路由）。
+  `host.test.mjs` 现 36 条。
+
 ## [0.16.1] — 2026-11-17
 
 ### 修复

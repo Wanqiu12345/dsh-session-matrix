@@ -164,7 +164,7 @@ function makeCtx(fixture, opts = {}) {
   // Connection is what makes the plugin's exact routes authenticated; the fake
   // keeps the same shape so the contract test exercises the real registration
   // path instead of the (removed) unauthenticated fallback.
-  const connection = {
+  const connection = opts.noConnection === true ? undefined : {
     fetch: {
       register: route => {
         routes.set(route.path, { ...route, resource: route.fetch })
@@ -709,6 +709,18 @@ async function main() {
     assert.ok(reads > 0, 'a new revision must be read at least once')
     assert.ok(reads <= 6, `overlapping collects opened ${reads} handles, expected <= 6`)
   })
+
+  // ── security invariant: no Connection, no routes ─────────────────────────
+  // A route registered straight on the web server matches before the /api prefix
+  // and skips admission, which is exactly how session data used to leak. The
+  // plugin must therefore register nothing when Connection is unavailable.
+  {
+    const bare = makeCtx(fixture, { noConnection: true })
+    apply(bare.ctx, { prices: false })
+    check('without connection, no route is registered at all', () => {
+      assert.equal(bare.routes.size, 0, `expected 0 routes, got ${[...bare.routes.keys()].join(', ')}`)
+    })
+  }
 
   // ── Report ───────────────────────────────────────────────────────────────
   console.log(`\nhost.test.mjs — ${pass.length} passed, ${fail.length} failed`)
