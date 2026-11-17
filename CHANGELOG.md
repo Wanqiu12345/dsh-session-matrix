@@ -2,6 +2,12 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.16.5] — 2026-11-17
+
+### 变更
+- 新增 `prepublishOnly: npm test`：任何一次 `npm publish` 之前都先跑完整测试，防手滑。
+- 本版用于验证 OIDC 信任发布：GitHub Actions 打标签后自行测试并发布，不使用任何长期 token。
+
 ## [0.16.4] — 2026-11-17
 
 ### 修复

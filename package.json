@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-matrix",
-  "version": "0.16.4",
+  "version": "0.16.5",
   "description": "A multi-agent workspace for DeepSeek Harness: run parallel sessions, visualize agent relationships, monitor context usage, and manage task handoffs.",
   "keywords": [
     "deepseek-harness",
@@ -69,6 +69,7 @@
     }
   },
   "scripts": {
-    "test": "node test/host.test.mjs && node test/usage-split.test.mjs && node test/usage-vs-projection.test.mjs"
+    "test": "node test/host.test.mjs && node test/usage-split.test.mjs && node test/usage-vs-projection.test.mjs",
+    "prepublishOnly": "npm test"
   }
 }
