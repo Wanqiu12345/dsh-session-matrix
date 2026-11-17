@@ -2,6 +2,14 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.16.3] — 2026-11-17
+
+### 发布
+- **首次发布到 npm**：`dsh-session-matrix@0.16.2` 于 2026-11-17 12:48（北京时间）上线，
+  registry 的 `latest` 指向它。0.16.3 只是修正包内 README 的上架状态。
+- README 徽章从 release 切回 npm，删除「尚未发布」的说明。
+- 仓库 Website 指向 npm 包页面。
+
 ## [0.16.2] — 2026-11-17
 
 ### 修复
