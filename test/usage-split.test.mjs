@@ -30,7 +30,7 @@ const assert = (cond, message) => {
 }
 
 /** Build an epoch-ms timestamp for a given Beijing wall clock. */
-const beijing = (y, m, d, h, min = 0) => Date.UTC(y, m - 1, d, h - 8, min)
+const beijing = (y, m, d, h, min = 0, sec = 0) => Date.UTC(y, m - 1, d, h - 8, min, sec)
 
 // 2026-11-16 is a Monday, 2026-11-14 a Saturday.
 check('peak windows are 09:00–12:00 and 14:00–18:00 on weekdays', () => {
@@ -139,6 +139,81 @@ check('corrupt numbers are clamped, not credited', () => {
 check('an unterminated line is skipped without throwing', () => {
   const split = splitUsageText('{"type":"assistant/message","time":1,"data":{"usage":{"inputT')
   assert(split === null, 'partial JSON should be ignored')
+})
+
+// ── settlement events ────────────────────────────────────────────────────────
+// `assistant/attempt` carries usage only inside its stream (failed / retried /
+// cancelled calls), and `assistant/message` may omit the top-level summary.
+// Both must be counted, exactly once per request.
+
+const usageChunk = (time, usage) => ({ type: 'chunk', time, chunk: { type: 'usage', usage } })
+
+check('stream-only usage on a successful message is counted', () => {
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: beijing(2026, 11, 16, 10, 0),
+    data: { stream: [usageChunk(beijing(2026, 11, 16, 10, 0), { inputTokens: 40, outputTokens: 4 })] },
+  })
+  const split = splitUsageText(event)
+  assert(split.peak.uncached === 40 && split.peak.output === 4, JSON.stringify(split.peak))
+})
+
+check('a failed attempt is counted from its stream', () => {
+  const event = JSON.stringify({
+    type: 'assistant/attempt',
+    time: beijing(2026, 11, 16, 20, 0),
+    data: { turn: 1, step: 3, stream: [usageChunk(beijing(2026, 11, 16, 20, 0), { inputTokens: 900, outputTokens: 30 })] },
+  })
+  const split = splitUsageText(event)
+  assert(split.off.uncached === 900 && split.off.output === 30, JSON.stringify(split.off))
+  assert(split.peak.uncached === 0, 'attempt time is off-peak')
+})
+
+check('every retry attempt is counted', () => {
+  const at = beijing(2026, 11, 16, 11, 0)
+  const lines = [1, 2, 3].map(i => JSON.stringify({
+    type: 'assistant/attempt',
+    time: at,
+    data: { turn: 1, step: i, stream: [usageChunk(at, { inputTokens: 100, outputTokens: 10 })] },
+  }))
+  const split = splitUsageText(lines.join('\n'))
+  assert(split.requests === 3, `requests ${split.requests}`)
+  assert(split.peak.uncached === 300 && split.peak.output === 30, JSON.stringify(split.peak))
+})
+
+check('top-level and stream usage are never added together', () => {
+  const at = beijing(2026, 11, 16, 10, 0)
+  const usage = { inputTokens: 500, outputTokens: 50 }
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: at,
+    data: { usage, stream: [usageChunk(at, usage)] },
+  })
+  const split = splitUsageText(event)
+  assert(split.requests === 1, `requests ${split.requests}`)
+  assert(split.peak.uncached === 500, `expected 500 once, got ${split.peak.uncached}`)
+})
+
+check('peak classification uses the usage chunk time, not the settlement time', () => {
+  // The chunk landed at 11:59:59 (peak); the event was written at 12:00:01 (off).
+  const event = JSON.stringify({
+    type: 'assistant/message',
+    time: beijing(2026, 11, 16, 12, 0, 1),
+    data: { stream: [usageChunk(beijing(2026, 11, 16, 11, 59, 59), { inputTokens: 77, outputTokens: 7 })] },
+  })
+  const split = splitUsageText(event)
+  assert(split.peak.uncached === 77, `expected peak, got peak=${split.peak.uncached} off=${split.off.uncached}`)
+  assert(split.off.uncached === 0, 'must not be classified as off-peak')
+})
+
+check('cache buckets accumulate separately', () => {
+  const at = beijing(2026, 11, 16, 10, 0)
+  const a = JSON.stringify({ type: 'assistant/message', time: at, data: { usage: { inputTokens: 10, outputTokens: 1, cacheReadTokens: 1000, cacheWriteTokens: 20 } } })
+  const b = JSON.stringify({ type: 'assistant/message', time: at, data: { usage: { inputTokens: 5, outputTokens: 2, cacheReadTokens: 2000, cacheWriteTokens: 30 } } })
+  const split = splitUsageText([a, b].join('\n'))
+  assert(split.peak.cacheRead === 3000, `cacheRead ${split.peak.cacheRead}`)
+  assert(split.peak.cacheWrite === 50, `cacheWrite ${split.peak.cacheWrite}`)
+  assert(split.peak.uncached === 15 && split.peak.output === 3, 'input/output totals')
 })
 
 

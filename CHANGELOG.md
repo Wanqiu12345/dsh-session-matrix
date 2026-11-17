@@ -2,6 +2,29 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.16.0] — 2026-11-17
+
+### 安全（破坏性）
+- **三个路由改走 `ctx.connection.fetch.register()`。** 之前注册在 web server 上，exact 路由先于
+  `/api` 前缀匹配，绕过了 Connection 的 `admit()`，无 token 也能读到会话标题、项目与用量。
+  现在由 Connection 统一认证，`inject` 增加 `connection`。
+- 移除无鉴权回退：`connection` 缺失时路由**不注册**，面板接口不可用。宁可坏，不可漏。
+- 实测：无 token 401、错 token 401、带 cookie 200、不可信 Host/Origin 403、卸载后 404，三条路由都测了。
+
+### 修复
+- **漏算失败与重试请求。** `assistant/attempt` 只在 `stream` 里带 usage，之前完全没读；
+  `assistant/message` 的顶层 `usage` 缺失时也没兜底。现在两者都读，一个 settlement 只记一次，
+  峰谷按 usage 分片自身的时间判断，`reasoningTokens` 不重复累加。
+- 与 DSH 自算的 `tokenUsage.totals` 对账：**37/37 个会话完全一致**。
+
+### 新增
+- 历史读取优先走 `sessionPersistence`：`stat().revision` 做缓存键，`open(id,'read')` 拿到的是
+  已解析事件，不再解压 zstd；文件扫描降级为回退路径。两条路径实测都收敛到同一金额（¥98.29）。
+
+### 测试
+- `usage-split` 16 条（峰时边界、多帧、截断、损坏、attempt、重试、分片时间、缓存桶）。
+- `usage-vs-projection` 37/37 对账；`host` 31 条。
+
 ## [0.15.3] — 2026-11-17
 
 ### 修复

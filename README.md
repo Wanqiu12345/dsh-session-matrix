@@ -220,6 +220,20 @@ dsh plugin --profile web update dsh-session-matrix@latest
 | 实测 | DSH `0.2.2-rc.x`，Windows 11 |
 | 未实测 | macOS、Linux |
 | 运行时依赖 | 无（两个 JS 文件，无构建） |
+| 宿主服务 | `webServer`、`sessionQuery`、`sessions`、`connection`（缺 `connection` 时接口不注册） |
+
+## 安全
+
+三个接口注册在 `ctx.connection.fetch` 上，因此走 Connection 的认证通道：
+
+```js
+connection.fetch.register({ path: '/api/session-matrix/overview', methods: ['GET','HEAD'], ... })
+```
+
+- 认证由宿主的 `connection.admit()` 完成：没有 cookie 401，非 owner principal 403。
+- **没有**无鉴权回退：`connection` 缺失时接口直接不注册，面板会提示取数失败。
+- 路由随插件生命周期注册/卸载，卸载后再访问返回 404。
+- `connection` 是 0.2.2-rc.1 起就有的服务；本插件 `inject` 里已声明它。
 
 ## Known limitations
 

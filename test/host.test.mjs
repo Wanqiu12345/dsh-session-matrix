@@ -146,10 +146,23 @@ function makeCtx(fixture, opts = {}) {
     list: () => fixture.workspaces,
   }
 
+  // Connection is what makes the plugin's exact routes authenticated; the fake
+  // keeps the same shape so the contract test exercises the real registration
+  // path instead of the (removed) unauthenticated fallback.
+  const connection = {
+    fetch: {
+      register: route => {
+        routes.set(route.path, { ...route, resource: route.fetch })
+        return () => routes.delete(route.path)
+      },
+    },
+  }
+
   const services = {
     sessionProjections,
     workspaceRegistry,
     appBoot: { version: '0.2.2-rc.3' },
+    connection,
   }
 
   const ctx = {
