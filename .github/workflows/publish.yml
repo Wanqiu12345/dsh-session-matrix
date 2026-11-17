@@ -41,6 +41,7 @@ jobs:
         run: npm test
 
       - name: Tag must match package.json
+        if: github.ref_type == 'tag'
         run: |
           node -e '
             const version = require("./package.json").version;
