@@ -10,6 +10,7 @@
   <a href="https://www.npmjs.com/package/dsh-session-matrix"><img src="https://img.shields.io/npm/v/dsh-session-matrix?label=npm&color=blue" alt="npm"></a>
   <a href="https://github.com/Wanqiu12345/dsh-session-matrix/actions/workflows/ci.yml"><img src="https://github.com/Wanqiu12345/dsh-session-matrix/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="MIT"></a>
+  <a href="https://dsh.market/"><img src="https://raw.githubusercontent.com/2BingLing/dsh-market/master/assets/readme/badge-listed-zh.svg" alt="DSH Market"></a>
   <img src="https://img.shields.io/badge/DSH-%E2%89%A50.2.2--rc.1-8a2be2" alt="DSH >= 0.2.2-rc.1">
   <img src="https://img.shields.io/badge/runtime%20deps-0-brightgreen" alt="no runtime deps">
 </p>
