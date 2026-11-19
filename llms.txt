@@ -39,7 +39,9 @@ If you only run one session, you do not need this.
   14:00–18:00) at 2×; statutory holidays are off-peak all day (2026 State Council schedule built in,
   and make-up workdays that fall on a weekend count as weekdays). Non-DeepSeek routes fall back to models.dev in USD.
 - Context occupancy uses the provider-reported prompt size, not a character-count estimate.
-- Compaction point mirrors the official `dsh-compaction-basic` formula:
+- Context composition (seven parts) is computed by this plugin from session logs and anchored to the
+  host's displayed total; nothing else needs to be installed for it.
+- Compaction point follows the host's own compaction formula:
   `contextWindow − reservedCompletionTokens − headroomTokens` (headroom defaults to 4096), which is
   788,480 tokens (75.2%) for a 1,048,576 window with 256,000 reserved. An earlier estimate
   (`min(window × 80%, window − output − 64K)`) warned too early and was removed. Watch line = point × 80%,
@@ -50,18 +52,14 @@ If you only run one session, you do not need this.
 
 ## Not true / not claimed
 
-- It is not a replacement for `dsh-context` (which analyses context far more deeply).
-- It is not the only plugin with split views: `dsh-session-grid`, `dsh-multi-session`, and
-  `dsh-multi-chat` also do that; some have tabs and tmux-style splitting this plugin lacks.
+- It is not the only plugin that can show several sessions side by side; other plugins do that too,
+  some with tabs or tmux-style splitting this plugin does not offer.
 - It does not price non-DeepSeek models in CNY.
 - It has no telemetry and makes no network request except an optional `models.dev` price fetch.
-- It does not depend on other plugins. Model names, usage totals and context occupancy come from core
-  DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`). Cost prefers the projections'
-  peak/off-peak buckets; without them it rebuilds peak/off-peak from per-request timestamps in session
-  logs, so the numbers reconcile with `dsh-context` installed. It is an estimate, not a bill.
-- Credit: the data shapes and pricing rules follow `dsh-context` (bowenliang123), which is the deeper
-  context-analysis plugin in this ecosystem. It is not a code dependency and does not appear in GitHub's
-  contributor list, which counts commits only.
+- It does not depend on other plugins: model names, usage totals and context occupancy come from core
+  DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`); composition, compaction counts and
+  cost buckets are recomputed from session logs. All derived figures are estimates for orientation
+  ("estimate · orientation only" in the UI), not a billing statement.
 
 ## Links
 
