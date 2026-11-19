@@ -2,14 +2,13 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
-## [0.17.3] — 2026-11-19
+## [0.18.4] — 2026-11-20
 
-### 文档与元数据（功能无变化）
+### 修复
 
-- README 中英文介绍改为「全景控制台」口径：四格原生会话并行、神经链路看清主子 Agent、压缩前交接。
-- 更新 npm description 与 keywords，补 `context-rot` / `compaction-count` / `handoff-protocol` 等搜索词。
-- 修正 llms.txt 里过时的压缩点公式（旧估算式 → 与官方 dsh-compaction-basic 一致）与费用口径描述。
-- 交接弹窗截图更新到 0.17.2 界面；README 顶部加官方介绍帖与英文文章的交叉链接。
+- 压缩点说明的 tooltip 清除最后一个第三方插件名：「与 dsh-compaction-basic 一致」→「DSH 宿主自身的压缩点算法」。全库引号字符串复扫无其它插件名。
+- publish 工作流自动建 GitHub Release（`contents: write` + `gh release create --generate-notes`，已存在的 Release 幂等跳过）——tag 一推，Release 不再依赖人工补建。
+- CHANGELOG 结构整理：版本严格倒序；0.18.0（未发布）并入 0.18.1 说明；0.18.1 的守卫描述恢复完整标识符。
 
 ## [0.18.3] — 2026-11-19
 
@@ -27,22 +26,16 @@
 
 ## [0.18.1] — 2026-11-19
 
-### 修复
+### 去依赖 + 五项体验修复（0.18.0 因 CI 用例失败未发布，改号 0.18.1）
 
-- 无投影且日志为空时会话的  被误报为 0（应保持 null）—— 守卫修正； 增加  标记。
-
-（0.18.0 的 CI 因该用例失败未发布，npm 无 0.18.0。）
-
-## [0.18.0] — 2026-11-19
-
-### 去 dsh-context 依赖 + 五项体验修复
-
-**上下文构成自算（不再依赖 dsh-context）**：参考其开源算法（bowenliang123/dsh-context，Apache-2.0）自实现构成引擎——按事件类型与 source.kind 折叠出 system/tools/user/inject/skill/assistant/tool 七项，工具定义取自 request/header，窗口与输出预留取自 request/context；无投影时面板自动回退。与 dsh-context 的占比对比（5 个真实会话）：平均差异 0.9 个百分点，最差单类 5.3pp。
+**上下文构成自算（零依赖）**：自实现构成引擎——按事件类型与 source.kind 折叠出 system/tools/user/inject/skill/assistant/tool 七项，工具定义取自 request/header，窗口与输出预留取自 request/context；无投影时面板自动回退。无投影环境下七项构成、压缩点、占用率全部可算。
 
 - 默认分栏 4 → 2；减栏按钮改为「− 减少一栏」文字按钮。
 - 顶栏不再换行：nowrap + 容器查询在 1240/1040px 两档折叠次要元素。
 - 三模块（构成/概览/详情）之间加拖拽分隔条，比例持久化。
 - 字号整体上调（10-11px → 12-13px，构成模块 13px 对齐原生）；主读取区颜色 tertiary → secondary。
+
+- 【修复】无投影且日志为空时会话的 `total` 被误报为 0（应保持 null）——`positive()` 守卫修正；`contextSource` 增加 `composed` 标记。
 
 测试新增 compose.test.mjs（7 项）；全量 141 项通过。运行时验证：2 栏默认、拖拽手柄、单行顶栏、13px 字号、无崩溃。
 
@@ -75,6 +68,16 @@
 - 内置国务院办公厅 2026 年放假安排（gov.cn，2025-11-04）：元旦/春节/清明/劳动节/端午/中秋/国庆全天谷时；**调休上班的周六周日按工作日计峰时**（此前会把这 6 天误算成谷时，少算）。
 
 - 表格覆盖 2026 全年，2027 年安排公布后需更新内置表（源码内有标记）。测试新增 6 项日历用例。
+
+## [0.17.3] — 2026-11-19
+
+### 文档与元数据（功能无变化）
+
+- README 中英文介绍改为「全景控制台」口径：四格原生会话并行、神经链路看清主子 Agent、压缩前交接。
+- 更新 npm description 与 keywords，补 `context-rot` / `compaction-count` / `handoff-protocol` 等搜索词。
+- 修正 llms.txt 里过时的压缩点公式（旧估算式 → 与官方 dsh-compaction-basic 一致）与费用口径描述。
+- 交接弹窗截图更新到 0.17.2 界面；README 顶部加官方介绍帖与英文文章的交叉链接。
+
 
 ## [0.17.2] — 2026-11-19
 

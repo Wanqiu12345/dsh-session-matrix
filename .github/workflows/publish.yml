@@ -18,7 +18,7 @@ on:
         default: ''
 
 permissions:
-  contents: read
+  contents: write # required to create the GitHub Release for each tag
   id-token: write # required to mint the OIDC token npm exchanges for publish rights
 
 jobs:
@@ -96,3 +96,24 @@ jobs:
           steps.guard.outputs.exists == 'false' &&
           (github.event_name == 'push' || inputs.publish_confirm == 'publish')
         run: npm publish --provenance --access public
+
+      # The Release is part of the release: a tag must never leave the
+      # repository's Releases page stale. Idempotent — an existing Release is
+      # left untouched instead of failing the run.
+      - name: Create GitHub Release
+        if: |
+          github.ref_type == 'tag' &&
+          steps.guard.outputs.exists == 'false' &&
+          (github.event_name == 'push' || inputs.publish_confirm == 'publish')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "::notice::release $GITHUB_REF_NAME already exists; leaving it as is"
+            exit 0
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes \
+            --verify-tag
