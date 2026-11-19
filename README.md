@@ -181,13 +181,16 @@ DSH 每次压缩都会在会话里留下一个检查点（`compact-checkpoint`�
 Agent Network，我们用同样的父子关系模型，但放在跨项目的全局视图里。
 
 **它现在是可选的，不是依赖。** 早期版本读的是它注册的 `contextTimeline` / `contextActivity` 投影，
-没装它费用就是空的；现在两条数据都改走 DSH 核心：
+没装它费用就是空的；现在费用改走 DSH 核心，上下文构成与压缩点改为**从会话日志自算**（0.18.0 起），
+没装它的机器上七项构成也能正常显示：
 
 | 数据 | 现在从哪来 | 没装 dsh-context 时 |
 |:--|:--|:--|
 | 模型名 | 核心 `modelSelection` 投影 | 正常 |
 | 用量（四个 token 桶） | 核心 `tokenUsage` 投影（`{ver,seq,val}` 包装已解） | 正常 |
-| 上下文占用 | 核心 `contextPressure` | 正常 |
+| 上下文占用 | 投影优先；没有则**从会话事件折叠估算**（system / 工具 schema / 各类消息按 4 字符≈1 token 估算） | 正常（估算值） |
+| 上下文构成（七项） | 投影优先；没有则**从会话日志自算**——按事件的类型与 `source.kind` 分成 system / tools / user / inject / skill / assistant / tool，锚定到面板显示的总量 | 正常（与 dsh-context 占比对比平均差异 <1 个百分点） |
+| 压缩点 / 输出预留 | 从日志 `request/context`（contextWindow）与 `request/header`（maxTokens）取 | 正常 |
 | 费用 | 优先用投影的峰谷分桶；没有则**从会话日志重建**峰/谷（每条 `assistant/message` 带 `time` 和 `usage`） | 与装了它基本一致 |
 
 装它的收益是**费用更准**（能区分峰谷，等于把白天的 2× 算进去），以及 Context 页那种逐请求的深挖。

@@ -11,6 +11,19 @@
 - 修正 llms.txt 里过时的压缩点公式（旧估算式 → 与官方 dsh-compaction-basic 一致）与费用口径描述。
 - 交接弹窗截图更新到 0.17.2 界面；README 顶部加官方介绍帖与英文文章的交叉链接。
 
+## [0.18.0] — 2026-11-19
+
+### 去 dsh-context 依赖 + 五项体验修复
+
+**上下文构成自算（不再依赖 dsh-context）**：参考其开源算法（bowenliang123/dsh-context，Apache-2.0）自实现构成引擎——按事件类型与 source.kind 折叠出 system/tools/user/inject/skill/assistant/tool 七项，工具定义取自 request/header，窗口与输出预留取自 request/context；无投影时面板自动回退。与 dsh-context 的占比对比（5 个真实会话）：平均差异 0.9 个百分点，最差单类 5.3pp。
+
+- 默认分栏 4 → 2；减栏按钮改为「− 减少一栏」文字按钮。
+- 顶栏不再换行：nowrap + 容器查询在 1240/1040px 两档折叠次要元素。
+- 三模块（构成/概览/详情）之间加拖拽分隔条，比例持久化。
+- 字号整体上调（10-11px → 12-13px，构成模块 13px 对齐原生）；主读取区颜色 tertiary → secondary。
+
+测试新增 compose.test.mjs（7 项）；全量 141 项通过。运行时验证：2 栏默认、拖拽手柄、单行顶栏、13px 字号、无崩溃。
+
 ## [0.17.6] — 2026-11-19
 
 ### 修复：工作台渲染崩溃（0.17.2 引入的回归）

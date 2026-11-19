@@ -1,6 +1,6 @@
 {
   "name": "dsh-session-matrix",
-  "version": "0.17.6",
+  "version": "0.18.0",
   "description": "A panoramic console for DeepSeek Harness: run multiple native sessions and subagents in parallel, see the agent graph, get compaction warnings, and hand work off before context is lost.",
   "keywords": [
     "deepseek-harness",
@@ -75,7 +75,7 @@
     }
   },
   "scripts": {
-    "test": "node test/host.test.mjs && node test/usage-split.test.mjs && node test/usage-reconcile.test.mjs && node test/risk-matrix.test.mjs && node test/usage-vs-projection.test.mjs && node test/cost-buckets.test.mjs",
+    "test": "node test/host.test.mjs && node test/usage-split.test.mjs && node test/usage-reconcile.test.mjs && node test/risk-matrix.test.mjs && node test/usage-vs-projection.test.mjs && node test/cost-buckets.test.mjs && node test/compose.test.mjs",
     "prepublishOnly": "npm test"
   }
 }
