@@ -28,7 +28,7 @@
   <a href="#vs-context"><b>与 dsh-context</b></a>
 </p>
 
-![左侧入口与四格工作区](./docs/01-entry.png)
+![左侧面板入口与智能体脉络](./docs/01-entry.png)
 
 ---
 
@@ -65,7 +65,9 @@
 - 每格挂载的是 DSH 原生 `conversation.content` 工厂实例：消息流、工具调用行、审批、
   Chat/Trajectory 切换、composer 全是原生的，**可以直接打字**。
 
-![四格并排](./docs/02-workspace-4.png)
+![工作区空态：进入时不自动占用窗格，由你从左侧挑选](./docs/02-workspace-empty.png)
+
+![三栏原生会话并排：消息流、工具调用与 composer 都是 DSH 原生的](./docs/02-workspace.png)
 
 <a id="graph"></a>
 
@@ -82,7 +84,7 @@
 - **节点尺寸 = 累计用量**，谁最重一眼能看出来。
 - 选中任一节点，下方三个模块按该节点的子树重新计算。
 
-![智能体脉络](./docs/03-graph.png)
+![智能体脉络：节点颜色 = 距压缩点的远近，尺寸 = 累计用量（图中为模拟预警状态）](./docs/03-graph.png)
 
 ### 三个模块
 
@@ -94,7 +96,7 @@
 
 「当前占用」和「合计」不是同一个量：前者是此刻占着多少，后者是历史上一共读过多少。
 
-![选中子代理后的联动](./docs/04-graph-selected.png)
+![选中节点后的联动：下方三个模块按该节点子树重新计算](./docs/04-graph-selected.png)
 
 ## 上下文监控
 
