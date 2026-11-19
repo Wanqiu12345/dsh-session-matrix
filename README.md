@@ -161,7 +161,7 @@ DSH 每次压缩都会在会话里留下一个检查点（`compact-checkpoint`�
 | V4.1 Flash `deepseek-flash`（旧名 `deepseek-v4-flash`） | 0.02 | 1 | 4 |
 | V4 Pro `deepseek-v4-pro` | 0.15 | 4.5 | 13.5 |
 
-峰时（北京时间工作日 09:00–12:00、14:00–18:00，节假日除外）**×2**。
+峰时（北京时间工作日 09:00–12:00、14:00–18:00）**×2**。法定节假日暂未建模，仍按工作日峰时计——见下方 Requirements 说明。
 `contextTimeline.cost` 已按峰谷分桶，直接分桶计算，不做时间推断。
 非 `deepseek` provider 回退 models.dev 美元价，按 `1 CNY = 0.15 USD` 折算。
 
