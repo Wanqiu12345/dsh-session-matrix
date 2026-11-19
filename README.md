@@ -28,6 +28,11 @@
   <a href="#vs-context"><b>与 dsh-context</b></a>
 </p>
 
+<p align="center">
+  <a href="https://github.com/deepseek-ai/deepseek-harness/discussions/13786"><b>官方社区介绍帖</b></a> ·
+  <a href="https://dev.to/wanqiu12345/running-four-ai-sessions-at-once-with-a-live-agent-graph-and-context-compaction-warnings-319"><b>英文介绍文章</b></a>
+</p>
+
 ![左侧面板入口与智能体脉络](./docs/01-entry.png)
 
 ---

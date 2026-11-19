@@ -1,20 +1,24 @@
 # DSH Session Matrix
 
-> A multi-agent workspace for DeepSeek Harness. Run parallel sessions, visualize agent relationships,
-> monitor context usage, and manage task handoffs.
+> A panoramic console for multi-Agent sessions in DeepSeek Harness. Watch several sessions and
+> subagents running in parallel without switching, see the parent/child Agent graph at a glance,
+> and hand work off before compaction drops the details.
 
 DSH Session Matrix is a plugin for [DeepSeek Harness](https://www.deepseek.com/harness/) (DSH) that adds
-two views to the web/desktop app:
+one sidebar entry with two views:
 
 - **Workspace** — a session list plus 1–4 panes, where every pane is a real native conversation
-  (DSH's own `conversation.content` factory), not a preview or a mirror.
-- **Agent Graph** — a layered graph `workbench → project → main session → subagent`, coloured by each
-  session's distance to its compaction point, with three modules underneath: context composition,
-  cumulative usage and cost, and a session matrix.
+  (DSH's own `conversation.content` factory), not a preview or a mirror. You can type and send in each
+  pane; subagent panes are read-only.
+- **Agent Graph** — a neural-link graph `workbench → project → main session → subagent`. Edges come from
+  the real `parentSession` field, not inferred "same project" guesses. Node colour is distance to the
+  compaction point; node size is cumulative usage. Selecting a node re-scopes three modules underneath:
+  context composition, cumulative usage and estimated cost, and a session matrix.
 
 It also implements **Agent Handoff**: a protocol-v1 prompt that makes an agent write
 `HANDOFF-<timestamp>.md` (goal, progress, key files, rejected approaches, open questions) plus a
 takeover message, so work can continue in a fresh session before compaction throws the details away.
+The button only copies — it does not send or modify any session.
 
 ## When to use it
 
@@ -34,8 +38,14 @@ If you only run one session, you do not need this.
 - Cost is CNY: DeepSeek's official price list, peak hours (Beijing time, Mon–Fri 09:00–12:00 and
   14:00–18:00, holidays excluded) at 2×. Non-DeepSeek routes fall back to models.dev in USD.
 - Context occupancy uses the provider-reported prompt size, not a character-count estimate.
-- Compaction point: `min(window × 80%, window − max output − 64K)`; watch line at 80% of that point,
-  critical line at 92%.
+- Compaction point mirrors the official `dsh-compaction-basic` formula:
+  `contextWindow − reservedCompletionTokens − headroomTokens` (headroom defaults to 4096), which is
+  788,480 tokens (75.2%) for a 1,048,576 window with 256,000 reserved. An earlier estimate
+  (`min(window × 80%, window − output − 64K)`) warned too early and was removed. Watch line = point × 80%,
+  critical line = point × 92%. This is a warning only; it does not expand context or stop compaction.
+- Handoff advice also counts compactions from `compact-checkpoint` markers in session logs: 0 compactions
+  at the critical line = "first approach", still usable, no handoff pushed; 1–2 = advise handoff; 3+ =
+  strongly advise. Compaction counts that cannot be read are labelled "unknown", never guessed.
 
 ## Not true / not claimed
 
@@ -45,8 +55,9 @@ If you only run one session, you do not need this.
 - It does not price non-DeepSeek models in CNY.
 - It has no telemetry and makes no network request except an optional `models.dev` price fetch.
 - It does not depend on other plugins. Model names, usage totals and context occupancy come from core
-  DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`). With `dsh-context` installed the
-  cost is exact to the peak/off-peak split; without it the cost is priced at the off-peak rate.
+  DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`). Cost prefers the projections'
+  peak/off-peak buckets; without them it rebuilds peak/off-peak from per-request timestamps in session
+  logs, so the numbers reconcile with `dsh-context` installed. It is an estimate, not a bill.
 - Credit: the data shapes and pricing rules follow `dsh-context` (bowenliang123), which is the deeper
   context-analysis plugin in this ecosystem. It is not a code dependency and does not appear in GitHub's
   contributor list, which counts commits only.

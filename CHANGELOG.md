@@ -2,6 +2,15 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.17.3] — 2026-11-19
+
+### 文档与元数据（功能无变化）
+
+- README 中英文介绍改为「全景控制台」口径：四格原生会话并行、神经链路看清主子 Agent、压缩前交接。
+- 更新 npm description 与 keywords，补 `context-rot` / `compaction-count` / `handoff-protocol` 等搜索词。
+- 修正 llms.txt 里过时的压缩点公式（旧估算式 → 与官方 dsh-compaction-basic 一致）与费用口径描述。
+- 交接弹窗截图更新到 0.17.2 界面；README 顶部加官方介绍帖与英文文章的交叉链接。
+
 ## [0.17.2] — 2026-11-19
 
 ### 修复（全量功能审计，见 docs/33）
