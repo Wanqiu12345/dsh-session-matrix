@@ -74,22 +74,34 @@ check('占用低于注意线恒为 ok（新鲜度豁免也不越级）', () => {
     'low occupancy stays ok even when fresh')
 })
 
-check('countCheckpoints：从事件流数检查点并取最新时间', () => {
+check('countCheckpoints：全量压缩与剪枝分开计数、总量相加', () => {
   const events = [
     { type: 'user/message', time: 100, data: { content: 'hi' } },
     { type: 'user/message', time: 200, data: { source: { kind: 'compact-checkpoint', compactionId: 'a' } } },
     { type: 'assistant/message', time: 300, data: { usage: {} } },
+    { type: 'compaction/prune', time: 350, data: { shadowedTokenCount: 5000 } },
     { type: 'user/message', time: 400, data: { source: { kind: 'compact-checkpoint', compactionId: 'b' } } },
+    { type: 'compaction/prune', time: 450, data: { shadowedTokenCount: 8000 } },
   ]
-  const { compactions, lastCompactionAt } = countCheckpoints(events)
-  assert(compactions === 2, `expected 2 checkpoints, got ${compactions}`)
-  assert(lastCompactionAt === 400, `expected last time 400, got ${lastCompactionAt}`)
+  const r = countCheckpoints(events)
+  assert(r.compactions === 4, `expected total 4, got ${r.compactions}`)
+  assert(r.fullCompactions === 2, `expected 2 full, got ${r.fullCompactions}`)
+  assert(r.pruneCompactions === 2, `expected 2 prunes, got ${r.pruneCompactions}`)
+  assert(r.lastCompactionAt === 450, `expected last time 450, got ${r.lastCompactionAt}`)
 })
-check('countCheckpoints：没有检查点时返回 0 / null', () => {
+check('countCheckpoints：没有压缩动作时返回 0 / null', () => {
   const { compactions, lastCompactionAt } = countCheckpoints([
     { type: 'user/message', time: 1, data: {} },
   ])
   assert(compactions === 0 && lastCompactionAt === null, 'empty stream must be 0/null')
+})
+check('countCheckpoints：纯剪枝会话（无全量压缩）也计入', () => {
+  const r = countCheckpoints([
+    { type: 'compaction/prune', time: 10, data: {} },
+    { type: 'compaction/prune', time: 20, data: {} },
+  ])
+  assert(r.compactions === 2 && r.fullCompactions === 0 && r.pruneCompactions === 2,
+    'prune-only session must count')
 })
 
 console.log(`risk-matrix.test.mjs — ${pass.length} passed, ${fail.length} failed`)
