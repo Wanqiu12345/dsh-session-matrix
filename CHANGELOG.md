@@ -2,11 +2,18 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [0.18.5] — 2026-11-20
+
+### 改进：GitHub Release 正文从 CHANGELOG 抽取
+
+- publish 工作流的 Release 步骤改用 `--notes-file`：从 CHANGELOG.md 抽取当前版本的条目作为正文（`--generate-notes` 在单人 commit 历史下会产出空正文）；抽取为空时回退为 CHANGELOG 链接。
+- 同版本 Release 已存在时保持幂等跳过。
+
 ## [0.18.4] — 2026-11-20
 
 ### 修复
 
-- 压缩点说明的 tooltip 清除最后一个第三方插件名：「与 dsh-compaction-basic 一致」→「DSH 宿主自身的压缩点算法」。全库引号字符串复扫无其它插件名。
+- 压缩点说明的 tooltip 清除最后一个第三方插件名，改为「DSH 宿主自身的压缩点算法」。全库引号字符串复扫无其它插件名。
 - publish 工作流自动建 GitHub Release（`contents: write` + `gh release create --generate-notes`，已存在的 Release 幂等跳过）——tag 一推，Release 不再依赖人工补建。
 - CHANGELOG 结构整理：版本严格倒序；0.18.0（未发布）并入 0.18.1 说明；0.18.1 的守卫描述恢复完整标识符。
 
@@ -20,7 +27,7 @@
 
 ### 修复：估算数据的如实标注（避免误解）
 
-- 无 dsh-context 时七项构成来自自算折叠（锚定核心投影的 prompt 总量）——新增 `partsSource: composed` 标记：构成模块页脚显示「估算：N 个会话未装 dsh-context · 仅供定位」小字，会话 tooltip 注明「不作对账依据」，装 dsh-context 后自动切回投影值。
+- 无投影时七项构成来自自算折叠（锚定核心投影的 prompt 总量）——新增 `partsSource: composed` 标记：构成模块页脚显示「估算 · 仅供定位」小字，会话 tooltip 注明「不作对账依据」，投影可用时自动切回。
 
 - `contextSource` 与 `partsSource` 分离：前者描述总量来源（核心 contextPressure），后者描述构成来源——新装环境下两者本就不同。
 

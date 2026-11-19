@@ -100,6 +100,10 @@ jobs:
       # The Release is part of the release: a tag must never leave the
       # repository's Releases page stale. Idempotent — an existing Release is
       # left untouched instead of failing the run.
+      #
+      # Notes come from the CHANGELOG section for this version, not from
+      # --generate-notes: a single-author commit history can produce an empty
+      # auto body, and the changelog is the text we actually write for users.
       - name: Create GitHub Release
         if: |
           github.ref_type == 'tag' &&
@@ -112,8 +116,22 @@ jobs:
             echo "::notice::release $GITHUB_REF_NAME already exists; leaving it as is"
             exit 0
           fi
+          node - <<'NODE' > "$RUNNER_TEMP/release-notes.md"
+          const fs = require('node:fs')
+          const version = require('./package.json').version
+          const text = fs.readFileSync('CHANGELOG.md', 'utf8')
+          const escaped = version.replace(/\./g, '\\.')
+          const pattern = new RegExp('## \\[' + escaped + '\\][^\\n]*\\n([\\s\\S]*?)(?=\\n## \\[|$)')
+          const match = text.match(pattern)
+          const body = match ? match[1].trim() : ''
+          if (body) process.stdout.write(body + '\n')
+          else {
+            const url = 'https://github.com/' + process.env.GITHUB_REPOSITORY + '/blob/main/CHANGELOG.md'
+            process.stdout.write('See [CHANGELOG.md](' + url + ').\n')
+          }
+          NODE
           gh release create "$GITHUB_REF_NAME" \
             --repo "$GITHUB_REPOSITORY" \
             --title "$GITHUB_REF_NAME" \
-            --generate-notes \
+            --notes-file "$RUNNER_TEMP/release-notes.md" \
             --verify-tag
