@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-一个多 Agent 会话的<b>全景控制台</b>：四格原生会话并排，同时盯住多个会话与子代理并行跑任务，<br>
+一个多 Agent 会话的<b>全景控制台</b>：原生会话并排（默认两栏，最多四格），同时盯住多个会话与子代理并行跑任务，<br>
 一张神经链路图看清主 Agent 与子代理的关系，在上下文压缩、细节丢失之前把工作交出去。
 </p>
 
@@ -44,7 +44,7 @@
 | 位置 | 你得到什么 |
 |:--|:--|
 | **左侧面板列表** | 一行「会话矩阵工作台」，与「上下文洞察」「技能中心」同级 |
-| **面板顶部** | 两个标签：`工作区`（四格原生会话）· `智能体脉络`（主子 Agent 神经链路） |
+| **面板顶部** | 两个标签：`工作区`（原生会话，默认两栏）· `智能体脉络`（主子 Agent 神经链路） |
 | **面板右上角** | 一个 **通用交接提示词** 按钮。旁边的小圆点在会话达到「注意」或「建议交接」时点亮 |
 
 点进左侧入口，你看到的是一个全景视图：多个会话并行推进、主子 Agent 的父子关系一目了然、
@@ -54,7 +54,7 @@
 
 ## 工作区：1–4 格原生会话
 
-这是主战场：最多四格原生对话窗格并排，每格都能**直接打字发消息**（子代理窗格只读），
+这是主战场：**默认两栏，最多四格**原生对话窗格并排，每格都能**直接打字发消息**（子代理窗格只读），
 不是一个只能看的截图墙。左侧是会话列表，按项目分组；子代理折叠在所属主会话下。
 **归档会话不显示**——和原生侧栏一致，你在原生侧取消归档，这里下一次刷新就回来了。
 
@@ -300,8 +300,8 @@ npm pack --dry-run  # 约 10 个文件 / 72 KB
 <details>
 <summary><b>English</b></summary>
 
-**A panoramic console for multi-Agent sessions in DeepSeek Harness.** Watch up to four native
-conversation panes at once and track several sessions and subagents running in parallel without
+**A panoramic console for multi-Agent sessions in DeepSeek Harness.** Watch two native
+conversation panes side by side by default (up to four) and track several sessions and subagents running in parallel without
 switching back and forth. A neural-link Agent graph draws `workbench → project → session → subagent`
 from real `parentSession` data, and a handoff protocol moves work to a fresh session before compaction
 drops the details.
