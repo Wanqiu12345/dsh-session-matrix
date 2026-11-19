@@ -168,7 +168,7 @@ DSH 每次压缩都会在会话里留下一个检查点（`compact-checkpoint`�
 | V4.1 Flash `deepseek-flash`（旧名 `deepseek-v4-flash`） | 0.02 | 1 | 4 |
 | V4 Pro `deepseek-v4-pro` | 0.15 | 4.5 | 13.5 |
 
-峰时（北京时间工作日 09:00–12:00、14:00–18:00）**×2**。法定节假日暂未建模，仍按工作日峰时计——见下方 Requirements 说明。
+峰时（北京时间周一至周五 09:00–12:00、14:00–18:00）**×2**。法定节假日全天按谷时计（内置国务院 2026 年放假安排，含调休上班的周末按工作日计）；2027 年安排公布后需更新内置表。
 `contextTimeline.cost` 已按峰谷分桶，直接分桶计算，不做时间推断。
 非 `deepseek` provider 回退 models.dev 美元价，按 `1 CNY = 0.15 USD` 折算。
 
@@ -263,7 +263,7 @@ connection.fetch.register({ path: '/api/session-matrix/overview', methods: ['GET
 
 - 仅 DeepSeek 模型按人民币计价；其他 provider 走 models.dev 美元价。
 - 子代理用量按会话独立统计，不并入父会话（脉络里选中主会话时，模块按子树汇总）。
-- 法定节假日未建模，峰谷桶由宿主提供。
+- 法定节假日按 2026 年国务院安排内置（节假日全天谷时，调休上班周末计峰时）。
 - 归档集合读自 `storages/workspace.json`；DSH 若调整该表结构，需同步修改读取逻辑。
 - macOS / Linux 未在真机验证。代码里没有平台分支，但"没写 `if`"不等于"测过"。
 

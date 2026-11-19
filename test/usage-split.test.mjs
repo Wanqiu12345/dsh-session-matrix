@@ -33,6 +33,20 @@ const assert = (cond, message) => {
 const beijing = (y, m, d, h, min = 0, sec = 0) => Date.UTC(y, m - 1, d, h - 8, min, sec)
 
 // 2026-11-16 is a Monday, 2026-11-14 a Saturday.
+check('法定节假日全天按谷时（DeepSeek 官方规则，2026 国务院安排）', () => {
+  assert(isPeakTime(beijing(2026, 1, 1, 10)) === false, '元旦周四 10:00 应为谷时')
+  assert(isPeakTime(beijing(2026, 2, 18, 10)) === false, '春节周三 10:00 应为谷时')
+  assert(isPeakTime(beijing(2026, 10, 6, 10)) === false, '国庆周二 10:00 应为谷时')
+  assert(isPeakTime(beijing(2026, 9, 25, 15)) === false, '中秋周五 15:00 应为谷时')
+})
+check('调休上班的周末按工作日计峰时', () => {
+  assert(isPeakTime(beijing(2026, 2, 14, 10)) === true, '春节调休周六 10:00 应为峰时')
+  assert(isPeakTime(beijing(2026, 10, 10, 15)) === true, '国庆调休周六 15:00 应为峰时')
+})
+check('普通周末与工作日不受日历影响', () => {
+  assert(isPeakTime(beijing(2026, 3, 7, 10)) === false, '普通周六 10:00 谷时')
+  assert(isPeakTime(beijing(2026, 11, 19, 10)) === true, '普通周四 10:00 峰时')
+})
 check('peak windows are 09:00–12:00 and 14:00–18:00 on weekdays', () => {
   assert(isPeakTime(beijing(2026, 11, 16, 8, 59)) === false, '08:59 should be off-peak')
   assert(isPeakTime(beijing(2026, 11, 16, 9, 0)) === true, '09:00 should be peak')
