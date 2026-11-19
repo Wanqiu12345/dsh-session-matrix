@@ -11,6 +11,14 @@
 - 修正 llms.txt 里过时的压缩点公式（旧估算式 → 与官方 dsh-compaction-basic 一致）与费用口径描述。
 - 交接弹窗截图更新到 0.17.2 界面；README 顶部加官方介绍帖与英文文章的交叉链接。
 
+## [0.18.2] — 2026-11-19
+
+### 修复：估算数据的如实标注（避免误解）
+
+- 无 dsh-context 时七项构成来自自算折叠（锚定核心投影的 prompt 总量）——新增 `partsSource: composed` 标记：构成模块页脚显示「估算：N 个会话未装 dsh-context · 仅供定位」小字，会话 tooltip 注明「不作对账依据」，装 dsh-context 后自动切回投影值。
+
+- `contextSource` 与 `partsSource` 分离：前者描述总量来源（核心 contextPressure），后者描述构成来源——新装环境下两者本就不同。
+
 ## [0.18.1] — 2026-11-19
 
 ### 修复
