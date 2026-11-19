@@ -136,7 +136,7 @@ pressureBudget = messageBudget − policy.headroomTokens      # headroom 默认 
 
 插件负责复制与定位：目标窗格会闪烁一次，避免粘错会话。
 
-![通用交接提示词](./docs/05-handoff.png)
+![通用交接提示词：左侧是为什么建议交接（压缩点阈值表），右侧是可编辑的协议全文，右下角「复制」](./docs/05-handoff.png)
 
 ## 费用口径
 
