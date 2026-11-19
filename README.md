@@ -16,8 +16,8 @@
 </p>
 
 <p align="center">
-同时跑多个 Agent：四个原生会话窗格并排，一张按压缩风险着色的 Agent Graph，<br>
-外加一份在上下文被压缩之前把工作交出去的协议。
+一个多 Agent 会话的<b>全景控制台</b>：四格原生会话并排，同时盯住多个会话与子代理并行跑任务，<br>
+一张神经链路图看清主 Agent 与子代理的关系，在上下文压缩、细节丢失之前把工作交出去。
 </p>
 
 <p align="center">
@@ -39,17 +39,19 @@
 | 位置 | 你得到什么 |
 |:--|:--|
 | **左侧面板列表** | 一行「会话矩阵工作台」，与「上下文洞察」「技能中心」同级 |
-| **面板顶部** | 两个标签：`工作区` · `智能体脉络` |
-| **面板右上角** | 一个 **通用交接提示词** 按钮。旁边的小圆点显示有几个会话进了注意区 |
+| **面板顶部** | 两个标签：`工作区`（四格原生会话）· `智能体脉络`（主子 Agent 神经链路） |
+| **面板右上角** | 一个 **通用交接提示词** 按钮。旁边的小圆点在会话达到「注意」或「建议交接」时点亮 |
 
-它不改 DSH 任何核心代码，只使用公开的 Cordis 服务与 slot 扩展点。
+点进左侧入口，你看到的是一个全景视图：多个会话并行推进、主子 Agent 的父子关系一目了然、
+每个会话离压缩还有多远，靠节点颜色一眼看穿。它不改 DSH 任何核心代码，只使用公开的 Cordis 服务与 slot 扩展点。
 
 <a id="workspace"></a>
 
 ## 工作区：1–4 格原生会话
 
-左侧是会话列表，按项目分组；子代理折叠在所属主会话下。**归档会话不显示**——和原生侧栏一致，
-你在原生侧取消归档，这里下一次刷新就回来了。
+这是主战场：最多四格原生对话窗格并排，每格都能**直接打字发消息**（子代理窗格只读），
+不是一个只能看的截图墙。左侧是会话列表，按项目分组；子代理折叠在所属主会话下。
+**归档会话不显示**——和原生侧栏一致，你在原生侧取消归档，这里下一次刷新就回来了。
 
 右侧窗格按格数自动排版：
 
@@ -73,16 +75,16 @@
 
 ## 智能体脉络：Agent Graph
 
-一张四列有向拓扑，从左到右：
+一张神经链路图，把一个工作空间下的会话、以及每个会话派生的子代理之间的关系画出来。四列从左到右：
 
 ```
 工作台  →  项目  →  主会话  →  子代理
 ```
 
-- **边来自会话头的 `parentSession`**，不推断"同项目"这类弱关系。
-- **节点颜色 = 距离压缩点的远近**：正常 / 注意 / 临界。
-- **节点尺寸 = 累计用量**，谁最重一眼能看出来。
-- 选中任一节点，下方三个模块按该节点的子树重新计算。
+- **边来自会话头真实的 `parentSession`**，不推断"同项目"这类弱关系——看到的就是实际发生的父子调度。
+- **节点颜色 = 距离压缩点的远近**：正常 / 注意 / 临界；**节点尺寸 = 累计用量**，谁最重一眼能看出来。
+- **点任一节点**，下方三个模块按它的子树重算：上下文构成、累计用量与预估费用、会话概览——
+  不用来回切换会话，就能判断该不该继续、要不要交接。
 
 ![智能体脉络：节点颜色 = 距压缩点的远近，尺寸 = 累计用量（图中为模拟预警状态）](./docs/03-graph.png)
 
@@ -290,9 +292,11 @@ npm pack --dry-run  # 约 10 个文件 / 72 KB
 <details>
 <summary><b>English</b></summary>
 
-**A multi-agent workspace for DeepSeek Harness.** One sidebar entry, two views: up to four native
-conversation panes, and an Agent Graph that draws `workbench → project → session → subagent` coloured
-by compaction risk. A handoff protocol moves work to a fresh session before compaction drops the details.
+**A panoramic console for multi-Agent sessions in DeepSeek Harness.** Watch up to four native
+conversation panes at once and track several sessions and subagents running in parallel without
+switching back and forth. A neural-link Agent graph draws `workbench → project → session → subagent`
+from real `parentSession` data, and a handoff protocol moves work to a fresh session before compaction
+drops the details.
 
 ```bash
 dsh plugin --profile web add dsh-session-matrix
