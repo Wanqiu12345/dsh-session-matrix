@@ -36,7 +36,8 @@ If you only run one session, you do not need this.
 - Requires DSH `>= 0.2.2-rc.1`, Node `^22.19.0` or `>= 24`.
 - Verified on DSH `0.2.2-rc.x`, Windows 11. macOS and Linux are not yet verified on real hardware.
 - Cost is CNY: DeepSeek's official price list, peak hours (Beijing time, Mon–Fri 09:00–12:00 and
-  14:00–18:00, holidays excluded) at 2×. Non-DeepSeek routes fall back to models.dev in USD.
+  14:00–18:00) at 2×; statutory holidays are off-peak all day (2026 State Council schedule built in,
+  and make-up workdays that fall on a weekend count as weekdays). Non-DeepSeek routes fall back to models.dev in USD.
 - Context occupancy uses the provider-reported prompt size, not a character-count estimate.
 - Compaction point mirrors the official `dsh-compaction-basic` formula:
   `contextWindow − reservedCompletionTokens − headroomTokens` (headroom defaults to 4096), which is
