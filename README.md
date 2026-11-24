@@ -250,6 +250,9 @@ dsh plugin --profile web update dsh-session-matrix@latest
 **源码安装**：把仓库路径写进 profile 的 `dependencies`（`link:`）与 `dsh.profile.bundles`，
 执行 `pnpm install` 后重启。
 
+> 插件免费、无遥测、无运行时依赖。如果它替你省下几次来回切换，[点个 Star](https://github.com/Wanqiu12345/dsh-session-matrix)
+> 就是最实在的支持——Star 多了，别的 DSH 用户才更容易在搜索里看见它。
+
 ## Requirements
 
 | 项 | 值 |
