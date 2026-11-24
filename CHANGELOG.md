@@ -2,6 +2,19 @@
 
 按 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/) 组织，版本号遵循语义化。
 
+## [未发布]
+
+### 修复：桌面客户端窗格恢复真实对话
+
+- **根因**：桌面宿主把消息流的装载收进了引用声明的 facet——`sessions.retain(id, { source, facets: { conversation: true } })`。我们只传了 `source`，拿到的是「占位」句柄：窗格能画出会话骨架，但历史消息永远不装载（表现为一直「加载更早」/「无法加载聊天记录」）。宿主自己的主视图、侧栏聊天、子代理三处都带这个 facet。
+- 交回原始句柄给 `SessionProvider`，删掉自拼的 `{sessionId, binding, ...}` 包装——`bindingSource()` 会严格校验 `reference.binding === sessions.binding(id)`，自拼对象会丢 getter 或拿到过期 owner。
+- 保留健康检查兜底，但判据收紧为「出现『加载更早』且消息行数为 0」，短会话不再被误判；等待时间 1.5s → 2.5s。
+
+### 修复：深浅两套主题的可读性
+
+- 宿主浅色主题的 `label-caption`（#ADB2B8）在白底只有 2.1:1；深色下小字也只有 3.3–4.3:1。栏数、需注意、未选中页签、会话行第二行、筛选计数、缩放数值、tooltip 正文统一提一档到 `label-secondary`；「需注意」的 warn 标签与主文字色混合，浅色下由 2.8:1 提升到 4.5:1 以上。
+- 实测（真实客户端、canvas 取真实 sRGB、排除宿主自绘的对话区）：深色 0 处、浅色 0 处低于 WCAG AA 阈值。
+
 ## [0.18.5] — 2026-11-20
 
 ### 改进：GitHub Release 正文从 CHANGELOG 抽取
