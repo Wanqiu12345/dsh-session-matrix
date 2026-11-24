@@ -282,13 +282,14 @@ async function main() {
   // models.dev, and a unit test must not depend on the network.
   apply(ctx, { cacheTtlMs: 1000, coldBudgetMs: 5000, prices: false })
 
-  check('registers the three read routes', () => {
-    // The session-detail route was removed with the in-cell preview: panes host
-    // the real conversation now, so the host no longer needs to ship text.
-    assert.equal(routes.size, 3)
+  check('registers the read routes', () => {
+    // overview / capabilities / handoff / version. The session-detail route was
+    // removed with the in-cell preview; version powers the update chip.
+    assert.equal(routes.size, 4)
     assert.ok(routes.has('/api/session-matrix/overview'))
     assert.ok(routes.has('/api/session-matrix/capabilities'))
     assert.ok(routes.has('/api/session-matrix/handoff'))
+    assert.ok(routes.has('/api/session-matrix/version'))
   })
 
   check('subscribes to session lifecycle events', () => {
