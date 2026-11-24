@@ -258,7 +258,7 @@ dsh plugin --profile web update dsh-session-matrix@latest
 | Node.js | `^22.19.0` 或 `>= 24` |
 | 实测 | DSH `0.2.2-rc.x`，Windows 11 |
 | 未实测 | macOS、Linux |
-| 运行时依赖 | 无（两个 JS 文件，无构建） |
+| 运行时依赖 | 无（三个 JS 模块 + 一个提示词模板，无构建） |
 | 宿主服务 | `webServer`、`sessionQuery`、`sessions`、`connection`（缺 `connection` 时接口不注册） |
 
 ## 安全
@@ -287,8 +287,9 @@ connection.fetch.register({ path: '/api/session-matrix/overview', methods: ['GET
 ```
 lib/index.js        宿主半边    Cordis 插件，三个 JSON 路由，读投影，价格表
 lib/client.js       浏览器半边  React 面板，两个视图，交接弹窗
+lib/usage-split.js  用量拆分    token 归类与费用分桶
 lib/handoff/v1.md   交接协议    以数据形式发布
-test/host.test.mjs  契约测试    29 个，不联网，伪造 DSH 上下文
+test/*.test.mjs     契约与单元测试 98 项，不联网，伪造 DSH 上下文
 ```
 
 宿主不渲染，客户端不读文件；数据只走三条路由。渲染异常由面板内的错误边界接住，
@@ -297,8 +298,8 @@ test/host.test.mjs  契约测试    29 个，不联网，伪造 DSH 上下文
 ## 开发
 
 ```bash
-npm test            # 29 个契约测试，不联网
-npm pack --dry-run  # 约 10 个文件 / 72 KB
+npm test            # 98 项契约与单元测试，不联网
+npm pack --dry-run  # 约 20 个文件 / 129 KB
 ```
 
 无构建步骤；修改 `lib/client.js` 后 DSH 会热重载面板。

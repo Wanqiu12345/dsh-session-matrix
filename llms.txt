@@ -32,7 +32,7 @@ If you only run one session, you do not need this.
 ## Facts
 
 - Package: `dsh-session-matrix` (npm), display name 会话矩阵工作台 / Session Matrix.
-- License: MIT. Runtime dependencies: none. Two source files, no build step.
+- License: MIT. Runtime dependencies: none. Three small ES modules plus a prompt template, no build step.
 - Requires DSH `>= 0.2.2-rc.1`, Node `^22.19.0` or `>= 24`.
 - Verified on DSH `0.2.2-rc.x`, Windows 11. macOS and Linux are not yet verified on real hardware.
 - Cost is CNY: DeepSeek's official price list, peak hours (Beijing time, Mon–Fri 09:00–12:00 and
@@ -49,13 +49,22 @@ If you only run one session, you do not need this.
 - Handoff advice also counts compactions from `compact-checkpoint` markers in session logs: 0 compactions
   at the critical line = "first approach", still usable, no handoff pushed; 1–2 = advise handoff; 3+ =
   strongly advise. Compaction counts that cannot be read are labelled "unknown", never guessed.
+- Update check: a `vX ↑` chip appears in the header when npm has a newer version and opens the plugin
+  details page (old hosts that cannot navigate fall back to the Releases page). It runs once when the
+  panel opens, then every 6 hours, is silent on failure, and `DSH_SESSION_MATRIX_UPDATE_CHECK=off`
+  turns it off completely.
+- First open starts a six-step spotlight tour (view tabs → session list → split → session count and
+  alerts → handoff prompt → more menu). Skip or `Esc` ends it; clicking the dimmed area does not close
+  it; it can be replayed from the `⋯` menu.
+- The header is localised (zh/en) from the host language; deep tooltips remain Chinese in v1.
 
 ## Not true / not claimed
 
 - It is not the only plugin that can show several sessions side by side; other plugins do that too,
   some with tabs or tmux-style splitting this plugin does not offer.
 - It does not price non-DeepSeek models in CNY.
-- It has no telemetry and makes no network request except an optional `models.dev` price fetch.
+- It has no telemetry. Network requests are limited to an optional `models.dev` price fetch and the
+  npm update check described above.
 - It does not depend on other plugins: model names, usage totals and context occupancy come from core
   DSH projections (`modelSelection`, `tokenUsage`, `contextPressure`); composition, compaction counts and
   cost buckets are recomputed from session logs. All derived figures are estimates for orientation
