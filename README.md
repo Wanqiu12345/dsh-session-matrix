@@ -33,7 +33,7 @@
   <a href="https://dev.to/wanqiu12345/running-four-ai-sessions-at-once-with-a-live-agent-graph-and-context-compaction-warnings-319"><b>英文介绍文章</b></a>
 </p>
 
-![左侧面板入口与智能体脉络](./docs/01-entry.png)
+![从左侧入口进入会话矩阵：两栏各自运行真实对话，切到智能体脉络可悬停查看每个会话的占用](./docs/00-demo.gif)
 
 ---
 
